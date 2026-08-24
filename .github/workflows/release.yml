@@ -1,0 +1,26 @@
+name: Release platform packages
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-platform:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: darwin-arm64
+          - os: ubuntu-latest
+            target: linux-x64
+          - os: windows-latest
+            target: win32-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: TODO
+        shell: bash
+        run: echo "TODO: build private core, smoke-test wwtp-fin, package and publish ${{ matrix.target }}."
