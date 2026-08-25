@@ -20,7 +20,7 @@
 
 wwtp-fin 把可追溯的结构化参数与证据转换为确定性的污水处理项目财务计算、检查、裁决、报告语义、表格数据和图表 brief。它不生成 Word 或图片，也不补造缺失项目事实。
 
-> 发布状态：`0.1.0` 已完成本地二进制与真实 npm 安装验收，但 npm/PyPI 尚未发布。下列 registry 安装命令在首个公开版本发布后生效。
+> 发布状态：`0.1.0` 已完成本地二进制与真实 npm 安装验收，但 npm 尚未发布。下列 registry 安装命令在首个公开版本发布后生效。
 
 ## 安装
 
@@ -32,15 +32,6 @@ wwtp-fin --version
 ```
 
 npm 发布流水线目标为 macOS Apple Silicon、Linux x64 和 Windows x64。
-
-### Python 包（首发后）
-
-```bash
-python3 -m pip install wwtp-fin
-wwtp-fin --version
-```
-
-Python 包路径要求 Python 3.9+。
 
 ## 快速开始
 

@@ -20,7 +20,7 @@
 
 wwtp-fin turns traceable structured parameters and evidence into deterministic wastewater-project financial calculations, checks, findings, report semantics, table data and figure briefs. It does not create Word files or images, and it never fills missing project facts.
 
-> Release status: `0.1.0` passes local binary and packed npm installation acceptance, but npm and PyPI publication have not happened yet. Registry commands below become valid after the first public release.
+> Release status: `0.1.0` passes local binary and packed npm installation acceptance, but npm publication has not happened yet. The registry command below becomes valid after the first public release.
 
 ## Installation
 
@@ -32,15 +32,6 @@ wwtp-fin --version
 ```
 
 The release workflow targets macOS Apple Silicon, Linux x64 and Windows x64.
-
-### Python package (after the first release)
-
-```bash
-python3 -m pip install wwtp-fin
-wwtp-fin --version
-```
-
-Python 3.9+ is required for the Python package route.
 
 ## Quick Start
 
