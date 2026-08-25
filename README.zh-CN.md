@@ -13,7 +13,6 @@
 </p>
 
 <p align="center">
-  <img alt="npm" src="https://img.shields.io/npm/v/@dztabel/wwtpfin?label=npm">
   <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20arm64%20%7C%20Linux%20x64%20%7C%20Windows%20x64-blue">
 </p>
 
@@ -21,18 +20,20 @@
 
 wwtp-fin 把可追溯的结构化参数与证据转换为确定性的污水处理项目财务计算、检查、裁决、报告语义、表格数据和图表 brief。它不生成 Word 或图片，也不补造缺失项目事实。
 
+> 发布状态：`0.1.0` 已完成本地二进制与真实 npm 安装验收，但 npm/PyPI 尚未发布。下列 registry 安装命令在首个公开版本发布后生效。
+
 ## 安装
 
-### npm 二进制
+### npm 二进制（首发后）
 
 ```bash
 npm install -g @dztabel/wwtpfin
 wwtp-fin --version
 ```
 
-npm 路径支持 macOS Apple Silicon、Linux x64 和 Windows x64。
+npm 发布流水线目标为 macOS Apple Silicon、Linux x64 和 Windows x64。
 
-### Python 包
+### Python 包（首发后）
 
 ```bash
 python3 -m pip install wwtp-fin
@@ -56,7 +57,9 @@ wwtp-fin check -p examples/showcase/project.yaml
 
 - [INTAKE](docs/INTAKE.md)：材料到契约的转化纪律。
 - [公开契约面](docs/contract-surface.md)：命令、schema、退出码与确定性约束。
+- [字段速查](docs/spec-reference.md)：输入域、证据域与输出 schema。
 - [产品边界](docs/boundary.md)：产品范围及与 DocxKit/ChartKit 的交接。
 - [二进制分发](docs/binary-distribution.md)：平台包发布形制。
+- [下游交接](examples/handoff/README.md)：DocxKit 与 ChartKit 的文件映射。
 
 公开仓只包含 npm 壳、用户文档、示例与 agent skills；不包含财务核心源码。

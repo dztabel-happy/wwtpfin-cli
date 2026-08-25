@@ -40,4 +40,4 @@
 | VfM | 仅在显式提供 PSC/PPP 所需输入时输出；缺 `vfm_opex_uplift` 或政府投资即不产出，不替代完整法定 VfM 资料与论证。 |
 | 地方税 | 房产税、城镇土地使用税、印花税可逐年输入并声明可扣除性；不自动按地方规则推导。 |
 
-完整领域语义以 [DOMAIN_CONTRACT.md](../DOMAIN_CONTRACT.md) 为准；能力矩阵用 `wwtp-fin capability` 实时查看。
+完整能力矩阵用 `wwtp-fin capability` 实时查看；输入和成果语义以 CLI 导出的 schema 为准。

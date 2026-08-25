@@ -1,26 +1,160 @@
 name: Release platform packages
 
 on:
-  push:
-    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish npm packages after successful builds"
+        required: true
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      core_ref:
+        description: "Exact wwtpfin-cli-core commit, tag, or branch to build"
+        required: true
+        type: string
 
 permissions:
   contents: read
 
+concurrency:
+  group: wwtpfin-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
+  resolve-core-ref:
+    runs-on: ubuntu-latest
+    outputs:
+      core_sha: ${{ steps.resolve.outputs.core_sha }}
+    steps:
+      - name: Checkout private core
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: dztabel-happy/wwtpfin-cli-core
+          ref: ${{ inputs.core_ref }}
+          ssh-key: ${{ secrets.CORE_DEPLOY_KEY }}
+          persist-credentials: false
+      - name: Resolve immutable core commit
+        id: resolve
+        shell: bash
+        run: echo "core_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
   build-platform:
+    needs: resolve-core-ref
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14
-            target: darwin-arm64
-          - os: ubuntu-latest
-            target: linux-x64
-          - os: windows-latest
-            target: win32-x64
-    runs-on: ${{ matrix.os }}
+          - runner: macos-14
+            platform: darwin-arm64
+            binary: wwtp-fin
+          - runner: ubuntu-latest
+            platform: linux-x64
+            binary: wwtp-fin
+          - runner: windows-latest
+            platform: win32-x64
+            binary: wwtp-fin.exe
+    runs-on: ${{ matrix.runner }}
     steps:
-      - name: TODO
+      - name: Checkout private core
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: dztabel-happy/wwtpfin-cli-core
+          ref: ${{ needs.resolve-core-ref.outputs.core_sha }}
+          ssh-key: ${{ secrets.CORE_DEPLOY_KEY }}
+          persist-credentials: false
+      - name: Checkout public wrapper
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          path: wrapper
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Install build environment
+        run: python -m pip install ".[dev]"
+      - name: Verify public package metadata
         shell: bash
-        run: echo "TODO: build private core, smoke-test wwtp-fin, package and publish ${{ matrix.target }}."
+        run: wrapper/scripts/verify_public.sh --core-repo "$PWD"
+      - name: Build binary
+        run: python scripts/build_binary.py
+      - name: Binary smoke test
+        shell: bash
+        run: |
+          "dist/wwtp-fin/${{ matrix.binary }}" --version
+          "dist/wwtp-fin/${{ matrix.binary }}" build -p wrapper/examples/showcase/project.yaml --evidence wrapper/examples/showcase/evidence.json -o build/release-smoke
+          "dist/wwtp-fin/${{ matrix.binary }}" verify-deliverable build/release-smoke
+      - name: Prepare npm platform package
+        run: python wrapper/scripts/prepare_platform_package.py --platform "${{ matrix.platform }}" --bundle-dir dist/wwtp-fin
+      - name: Packed install smoke test
+        shell: bash
+        run: |
+          pack_dir="$RUNNER_TEMP/wwtpfin-packages"
+          install_dir="$RUNNER_TEMP/wwtpfin-install"
+          mkdir -p "$pack_dir" "$install_dir"
+          (cd wrapper && npm pack --pack-destination "$pack_dir" >/dev/null)
+          (cd "wrapper/npm/platform-packages/${{ matrix.platform }}" && npm pack --pack-destination "$pack_dir" >/dev/null)
+          (cd "$install_dir" && npm init --yes >/dev/null)
+          npm install --prefix "$install_dir" "$pack_dir"/*.tgz >/dev/null
+          "$install_dir/node_modules/.bin/wwtp-fin" --version
+          "$install_dir/node_modules/.bin/wwtp-fin" schema --kind input >/dev/null
+          "$install_dir/node_modules/.bin/wwtp-fin" build -p wrapper/examples/showcase/project.yaml --evidence wrapper/examples/showcase/evidence.json -o "$install_dir/deliverable"
+          "$install_dir/node_modules/.bin/wwtp-fin" verify-deliverable "$install_dir/deliverable"
+      - name: Publish platform package
+        if: inputs.publish == 'true'
+        shell: bash
+        working-directory: wrapper/npm/platform-packages/${{ matrix.platform }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          package_id="$(node -p "const p=require('./package.json'); p.name + '@' + p.version")"
+          if npm view "$package_id" version >/dev/null 2>&1; then
+            echo "$package_id already exists; refusing to overwrite." >&2
+            exit 1
+          fi
+          npm publish
+
+  publish-main:
+    needs: [resolve-core-ref, build-platform]
+    if: inputs.publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout public wrapper
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - name: Checkout private core
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: dztabel-happy/wwtpfin-cli-core
+          ref: ${{ needs.resolve-core-ref.outputs.core_sha }}
+          path: core
+          ssh-key: ${{ secrets.CORE_DEPLOY_KEY }}
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Verify metadata
+        run: scripts/verify_public.sh --core-repo core
+      - name: Publish main package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          package_id="$(node -p "const p=require('./package.json'); p.name + '@' + p.version")"
+          if npm view "$package_id" version >/dev/null 2>&1; then
+            echo "$package_id already exists; refusing to overwrite." >&2
+            exit 1
+          fi
+          npm publish

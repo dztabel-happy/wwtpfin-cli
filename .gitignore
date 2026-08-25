@@ -1,3 +1,6 @@
 dist/
 node_modules/
 *.tgz
+npm/platform-packages/*/wwtp-fin
+npm/platform-packages/*/wwtp-fin.exe
+npm/platform-packages/*/_internal/

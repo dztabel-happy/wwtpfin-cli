@@ -1,0 +1,22 @@
+{
+  "name": "@dztabel/wwtpfin-darwin-arm64",
+  "version": "0.1.0",
+  "description": "macOS Apple Silicon binary for wwtp-fin.",
+  "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "wwtp-fin",
+    "_internal"
+  ],
+  "scripts": {
+    "prepack": "node -e \"const fs=require('fs'); if(!fs.existsSync('wwtp-fin')||!fs.existsSync('_internal')){console.error('wwtpfin platform package missing wwtp-fin or _internal'); process.exit(1)}\""
+  }
+}

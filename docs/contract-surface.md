@@ -67,4 +67,4 @@ wwtp-fin schema --kind deliverable
 - 同一输入产生逐字节一致的成果包；表、图、证据和引用必须闭合。
 - 财务计算不自行证明政策资格、模式适用性或项目必要性；未决必须保留为未决。
 
-产品边界见 [boundary.md](boundary.md)，实现与门禁见 [development.md](development.md)。
+产品边界见 [boundary.md](boundary.md)；实时能力边界以 `wwtp-fin capability` 为准。

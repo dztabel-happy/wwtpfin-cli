@@ -13,7 +13,6 @@
 </p>
 
 <p align="center">
-  <img alt="npm" src="https://img.shields.io/npm/v/@dztabel/wwtpfin?label=npm">
   <img alt="platforms" src="https://img.shields.io/badge/platform-macOS%20arm64%20%7C%20Linux%20x64%20%7C%20Windows%20x64-blue">
 </p>
 
@@ -21,18 +20,20 @@
 
 wwtp-fin turns traceable structured parameters and evidence into deterministic wastewater-project financial calculations, checks, findings, report semantics, table data and figure briefs. It does not create Word files or images, and it never fills missing project facts.
 
+> Release status: `0.1.0` passes local binary and packed npm installation acceptance, but npm and PyPI publication have not happened yet. Registry commands below become valid after the first public release.
+
 ## Installation
 
-### npm binary
+### npm binary (after the first release)
 
 ```bash
 npm install -g @dztabel/wwtpfin
 wwtp-fin --version
 ```
 
-The npm package installs a platform binary for macOS Apple Silicon, Linux x64 or Windows x64.
+The release workflow targets macOS Apple Silicon, Linux x64 and Windows x64.
 
-### Python package
+### Python package (after the first release)
 
 ```bash
 python3 -m pip install wwtp-fin
@@ -56,7 +57,9 @@ Read `quality.json`, `warnings.json`, `result.json`, `document.json`, tables and
 
 - [INTAKE](docs/INTAKE.md): material-to-contract conversion discipline.
 - [Contract surface](docs/contract-surface.md): public commands, schemas, exits and determinism.
+- [Field reference](docs/spec-reference.md): input, evidence and output schema domains.
 - [Boundaries](docs/boundary.md): product scope and DocxKit/ChartKit handoff.
 - [Binary distribution](docs/binary-distribution.md): platform-package release shape.
+- [Downstream handoff](examples/handoff/README.md): file mapping for DocxKit and ChartKit.
 
 The public repository contains the npm wrapper, user documentation, examples and agent skills only. The financial core source is not included.
