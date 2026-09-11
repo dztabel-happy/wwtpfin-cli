@@ -19,6 +19,7 @@ wwtp-fin schema --kind project-evidence -o schema-out
 | 成本 | `opex_items`、`opex_step_escalation`、`other_taxes`、`self_generation` | 每个成本项的水量关系、增长、税率和显式年度金额应如实填写。 |
 | 融资 | `equity_ratio`、`loan_*`、`loan_tranches`、`operating_loan_tranches`、`financing_declaration` | `loan_tranches[].principal_repayment_schedule_wan` 可按真实贷款承接逐年非均匀还本，不得同时填写该笔期限、宽限期或公式还款方式，也不得伪造 bullet 分档；运营期专项贷款必须绑定同年资本性投入；缺融资资料时声明不可用并登记未决，不以惯例填充。 |
 | 税务 | `vat_*`、`cit_mode`、`income_tax`、`capital_grants` | 计税方式、优惠资格证据与金额计算分离。 |
+| 指定主体收支 | `payer_cashflow` | 可选；主体、范围、支付归属、外部收支、依据和完整性声明。详见 [成本口径契约](COST_PERSPECTIVES.md)。 |
 | 评价 | `financial_benchmarks`、`discount_rate`、`breakeven_ratios`、`sensitivity_*` | 基准情景须附口径、来源、日期、提供方和证据状态；不运行敏感性分析时目标可省略且不产出空分析。 |
 | VfM | `vfm_*` | 仅显式输入齐备时产出；不是多方案情景组。 |
 
