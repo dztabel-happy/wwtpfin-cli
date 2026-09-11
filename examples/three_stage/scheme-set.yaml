@@ -1,0 +1,61 @@
+schema: wwtp-fin/scheme-set/1
+include_base: false
+objective:
+  metric: tariff_blended_gross
+  direction: min
+  basis: 合成示例：固定投资、服务量和补助，仅比较可实现的单价方案；不代表现实项目报价。
+hard_constraints: []
+candidates:
+- id: cash_gap
+  name: 计算有效但存在现金缺口
+  rationale: 仅验证产品流程，不是项目建议
+  overrides:
+    tariff_blended_gross: 0.01
+  tradeoffs:
+  - category: 付费
+    description: 较高单价由服务付费方承担
+    responsible_party: 服务付费方
+    approval_required: true
+    evidence_refs:
+    - synthetic://workflow
+  conditions:
+  - id: implementation
+    status: satisfied
+    evidence_refs:
+    - synthetic://workflow
+    note: 合成测试条件；不得用于现实项目
+- id: conditional
+  name: 数值通过但条件待落实
+  rationale: 仅验证产品流程，不是项目建议
+  overrides:
+    tariff_blended_gross: 3.5
+  tradeoffs:
+  - category: 付费
+    description: 较高单价由服务付费方承担
+    responsible_party: 服务付费方
+    approval_required: true
+    evidence_refs:
+    - synthetic://workflow
+  conditions:
+  - id: implementation
+    status: pending
+    evidence_refs: []
+    note: 合成测试条件；不得用于现实项目
+- id: complete
+  name: 供完整流程验收的合成方案
+  rationale: 仅验证产品流程，不是项目建议
+  overrides:
+    tariff_blended_gross: 4.0
+  tradeoffs:
+  - category: 付费
+    description: 较高单价由服务付费方承担
+    responsible_party: 服务付费方
+    approval_required: true
+    evidence_refs:
+    - synthetic://workflow
+  conditions:
+  - id: implementation
+    status: satisfied
+    evidence_refs:
+    - synthetic://workflow
+    note: 合成测试条件；不得用于现实项目

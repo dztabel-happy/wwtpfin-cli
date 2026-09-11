@@ -1,0 +1,41 @@
+{
+  "schema": "wwtp-fin/project-evidence/1",
+  "decisions": {},
+  "supporting": [
+    {
+      "evidence_id": "EX-FLOW",
+      "label": "历史水量",
+      "source": "示例监测年报",
+      "as_of": "2026-01-01",
+      "provided_by": "示例数据",
+      "table_role": "historical_flow",
+      "table_unit": "m³/d",
+      "topic_ids": ["water.history"],
+      "value": {
+        "columns": ["年份", "日均水量m3d"],
+        "rows": [
+          [2024, 18000],
+          [2025, 21000]
+        ]
+      }
+    },
+    {
+      "evidence_id": "EX-OPEX",
+      "label": "历史经营成本科目",
+      "source": "示例财务年报",
+      "as_of": "2026-01-01",
+      "provided_by": "示例数据",
+      "table_role": "historical_opex_items",
+      "table_unit": "万元",
+      "topic_ids": ["opex.history"],
+      "value": {
+        "columns": ["科目", "金额万元"],
+        "rows": [
+          ["电费", 420],
+          ["药剂费", 95],
+          ["人工成本", 260]
+        ]
+      }
+    }
+  ]
+}

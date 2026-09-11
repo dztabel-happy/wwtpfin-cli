@@ -68,6 +68,10 @@ def main(argv: list[str] | None = None) -> int:
             str(output),
         ])
         _run([str(binary), "verify-deliverable", str(output)])
+        _run([sys.executable, str(PUBLIC_ROOT / "scripts/verify_three_stage.py"),
+              "--cli", str(binary), "--assets",
+              str(install / "node_modules/@dztabel/wwtpfin"),
+              "--output", str(temp / "three-stage")])
     print("release preflight passed")
     return 0
 

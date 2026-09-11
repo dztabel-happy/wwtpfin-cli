@@ -1,0 +1,114 @@
+# 最小完整示例：参数 + 证据（examples/minimal_complete/evidence.json）。
+# concession_years 是运营期年数，不含建设期。本例建设期 2 年、运营期 25 年；
+# 若合同写「特许经营期 27 年含建设期 2 年」，此处仍填 25。
+# evaluation_date、revenue.settlement_channel 可在资料未给时省略；产品不会
+# 补固定日期或默认结算渠道。sensitivity_deltas 非空时才要求 sensitivity_target。
+#
+#   wwtp-fin build -p examples/minimal_complete/project.yaml \
+#     --evidence examples/minimal_complete/evidence.json -o deliverable/
+#
+project_name: 新建污水处理项目示例
+mode: BOT
+project_type: 新建项目
+transfer_price_wan: 0
+terminal_value_method: transfer_without_compensation
+concession_years: 25
+days_per_year: 365
+base_calendar_year: 2026
+evaluation_date: "2026-01-01"
+calculation_basis:
+  cashflow_convention: tax_inclusive_receipts_and_payments
+  project_after_tax_income_tax: adjusted_income_tax_on_positive_ebit
+  equity_after_tax_income_tax: actual_income_tax_after_loss_carryforward
+  dscr: net_cash_available_for_debt_service_over_debt_service
+  icr: ebit_over_interest
+  breakeven: classical_bep_first_full_load_year
+  payback_static: timed_equity_after_tax_t0_zero_elapsed
+  cumulative_surplus: operating_financial_plan_excludes_t0
+  tariff_adjustment: disabled
+  vat_terminal_credit: no_refund_no_cash_recovery
+design_capacity_m3d: 30000
+
+capital:
+  construction_years: 2
+  capex_schedule_wan: [7200, 4800]
+  capex_components_wan: {工程费用: 10200, 工程建设其他费用: 1200, 预备费: 400, 流动资金: 200}
+  capex_vat_basis: net_of_deductible_vat
+  capitalize_interest: true
+  assets:
+    - {name: 构筑物, cost_wan: 7200, life_years: 20, residual_rate: 0.05, kind: fixed_asset, depreciable: true, investment_origin: construction}
+    - {name: 机器设备, cost_wan: 4200, life_years: 10, residual_rate: 0.05, kind: fixed_asset, depreciable: true, investment_origin: construction}
+    - {name: 土地使用权, cost_wan: 400, life_years: 25, residual_rate: 0, kind: intangible, depreciable: true, investment_origin: construction}
+    - {name: 流动资金, cost_wan: 200, life_years: 1, residual_rate: 1, kind: working_capital, depreciable: false, investment_origin: construction}
+  replacement_assets:
+    - {name: 第12年设备资本化重置, operation_year: 12, cost_wan: 800, life_years: 10, residual_rate: 0.05, kind: fixed_asset, depreciable: true, vat_basis: net_of_deductible_vat}
+
+vol_segments:
+  - {year_from: 1, year_to: 1, m3d: 18000}
+  - {year_from: 2, year_to: 2, m3d: 24000}
+  - {year_from: 3, year_to: 25, m3d: 28500}
+water:
+  treated_basis: demand
+  billed_basis: treated
+  opex_basis: treated
+billable_cap_enabled: false
+
+tariff_blended_gross: 1.65
+tariff_escalation: []
+revenue:
+  mechanism: volumetric
+  regime: new_2023
+  funding_source: user_fee
+  settlement_channel: utility_collects
+
+opex_base_volume_m3d: 28500
+opex_items:
+  - {name: 电费, base_wan: 420, input_vat_rate: 0.13, price_adj_group: C3, scales_with_volume: true, annual_growth_rate: 0.02, vat_scope: shared}
+  - {name: 药剂费, base_wan: 95, input_vat_rate: 0.13, price_adj_group: C4, scales_with_volume: true, annual_growth_rate: 0.02, vat_scope: shared}
+  - {name: 人工成本, base_wan: 260, input_vat_rate: 0, price_adj_group: C1, scales_with_volume: false, annual_growth_rate: 0.04, vat_scope: shared}
+  - {name: 大修, base_wan: 0, input_vat_rate: 0.13, price_adj_group: C2, scales_with_volume: false, annual_growth_rate: 0.0, vat_scope: shared,
+     annual_amounts_wan: [0, 0, 0, 0, 300, 0, 0, 0, 0, 350, 0, 0, 0, 0, 400, 0, 0, 0, 0, 450, 0, 0, 0, 0, 500]}
+opex_exclusions: []
+other_taxes: []
+
+equity_ratio: 0.30
+loan_rate: 0.035
+market_reference_rate: 0.045
+financial_benchmarks:
+  - label: 示例委托门槛
+    firr_total_pretax: 0.05
+    firr_equity_aftertax: 0.06
+    source: 示例输入，实际项目须替换为经核验依据
+    as_of: "2026-01-01"
+    provided_by: 示例数据
+    evidence_state: unverified
+loan_term_years: 15
+loan_grace_years: 2
+loan_repayment_method: equal_principal
+enable_working_capital_loan: false
+dscr_include_short_term: false
+loan_tranches:
+  - {name: 商业银行贷款, share: 0.70, annual_rate: 0.035, term_years: 15, grace_years: 2, repayment_method: equal_principal}
+  - {name: 绿色项目贷款, share: 0.30, annual_rate: 0.030, term_years: 12, grace_years: 2, repayment_method: annuity}
+
+cit_mode: standard
+income_tax_rate: 0.25
+loss_carryforward_years: 5
+income_tax: {}
+vat_method: general
+vat_output_rate: 0.06
+vat_relief: none
+vat_addon_city: 0.05
+vat_addon_edu: 0.03
+vat_addon_local_edu: 0.02
+vat_credit_begin_wan: 0.0
+vat_line_mode: vat_payable_plus_addons
+surplus_reserve_rate: 0.10
+surplus_reserve_cap_ratio: 0.50
+dividend_payout_ratio: 0.0
+discount_rate: 0.06
+breakeven_ratios: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+term_comparison_years: []
+sensitivity_deltas: [-0.15, -0.10, -0.05, 0.0, 0.05, 0.10, 0.15]
+sensitivity_target: equity_after_tax
+vfm_enabled: false
