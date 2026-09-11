@@ -154,9 +154,75 @@ def main():
         assert a["series"]["CUM_CASH"] == b["series"]["CUM_CASH"]
         assert a["scalars"]["dscr_min"] < 1 < b["scalars"]["dscr_min"]
         assert (b["scalars"]["cum_cash_min"] >= 0) == funded
+    # A separate cash example: 100 annual receipts, 200 principal repayments,
+    # and 200 non-cash grant income. Book DSCR 1.5 must not pass a cash constraint.
+    trial = deepcopy(payload["params"])
+    trial.update(concession_years=10, design_capacity_m3d=10000, days_per_year=365,
+        vol_segments=[{"year_from": 1, "year_to": 10, "m3d": 10000}],
+        tariff_blended_gross=100/365, opex_items=[], operating_loan_tranches=[],
+        loan_tranches=[], loan_rate=0, loan_term_years=5, loan_grace_years=0,
+        loan_repayment_method="equal_principal", debt_ratio=.5, equity_ratio=.5,
+        vat_output_rate=0, vat_relief="none", vat_credit_begin_wan=0, income_tax_rate=0,
+        cit_mode="standard", term_comparison_years=[], financial_benchmarks=[])
+    trial["capital"] = {"construction_years": 1, "capex_schedule_wan": [3000],
+        "capex_components_wan": {"工程": 3000}, "capitalize_interest": True,
+        "capex_vat_basis": "tax_inclusive_no_credit",
+        "assets": [{"name": "工程", "cost_wan": 3000, "life_years": 10, "residual_rate": 0,
+            "kind": "fixed_asset", "depreciable": True, "investment_origin": "construction"}],
+        "replacement_assets": [], "funding": {"grant_use_wan": [1000],
+            "debt_ratio_basis": "after_grant", "evidence_refs": ["synthetic://cash"]}}
+    trial["capital_grants"] = {"recognition": "deferred_income", "output_vat_rate": 0,
+        "tranches": [{"period_index": 1, "amount_wan": 1000}],
+        "pools": [{"pool_id": "initial", "trigger_period_index": 1,
+            "start_period_index": 2, "amortisation_years": 5}]}
+    cash_params = save("cash-project.json", trial)
+    cash_contract = deepcopy(data["decision_contract"])
+    cash_contract["fixed_parameters"] = {"concession_years": 10}
+    cash_contract["hard_constraints"] = [{"metric": "cash_dscr_min", "op": ">=",
+        "value": 1, "basis": "合成验收：检验当期现金覆盖，不是银行要求"}]
+    cash_spec = deepcopy(changed_spec)
+    cash_spec["candidates"] = []
+    for pid, price in [("book_pass", 100/365), ("cash_pass", .55)]:
+        row = deepcopy(candidates[0])
+        row.update(id=pid, name=pid, overrides={"tariff_blended_gross": price})
+        cash_spec["candidates"].append(row)
+    run("compare", "-p", cash_params, "--contract", save("cash-contract.json", cash_contract),
+        "--evidence", evidence, "--schemes", save("cash-schemes.json", cash_spec),
+        "-o", out / "cash-comparison")
+    cash_comparison = out / "cash-comparison/scheme-comparison.json"
+    cash = json.loads(cash_comparison.read_text(encoding="utf-8"))
+    assert cash["selectable_shortlist"] == ["cash_pass"]
+    bad = cash["candidates"][0]
+    assert abs(bad["metrics"]["dscr_min"] - 1.5) < 1e-9
+    assert abs(bad["metrics"]["cash_dscr_min"] - .5) < 1e-9
+    run("solve", "-p", cash_params, "--var", "tariff_blended_gross", "--target", "cash_dscr_min",
+        "--value", 1, "-o", out / "cash-solve")
+    solved = json.loads((out / "cash-solve/solve.json").read_text(encoding="utf-8"))
+    assert solved["converged"] and abs(solved["solution"] - 200/365) < 1e-7
+    subprocess.run([sys.executable, str(helper), str(cash_comparison), "cash_pass",
+        str(out / "cash-selection.json"), "--confirmed-by", "synthetic acceptance",
+        "--confirmed-at", "2026-09-11", "--reference", "synthetic://cash",
+        "--purpose", "workflow_validation"], check=True, capture_output=True)
+    run("finalize", "--comparison", cash_comparison, "--selection", out / "cash-selection.json",
+        "--contract", out / "cash-contract.json", "--evidence", evidence, "-o", out / "cash-final")
+    run("verify-final-run", out / "cash-final")
+    cash_final = json.loads((out / "cash-final/deliverable/result.json").read_text(encoding="utf-8"))
+    assert cash_final["scalars"]["cash_dscr_min"] >= 1
+    assert cash_final["capital"]["cash_debt_service"]["status"] == "computed"
+    assert "dscr_cash_bridge" in cash_final["tables"]
+    assert all(abs(v - 200.75) < 1e-8 for v in cash_final["series"]["CASH_DEBT_AVAILABLE"])
+    trial.update(tariff_blended_gross=1, income_tax_rate=.25, vat_output_rate=.06,
+                 vat_relief="refund70", vat_refund_ratio=.7, vat_refund_taxable=False)
+    run("run", "-p", save("refund-tax-base.json", trial), "--no-sensitivity", "--no-boundaries",
+        "--compact", "-o", out / "refund-tax-base")
+    refund = json.loads((out / "refund-tax-base/run.json").read_text(encoding="utf-8"))["series"]
+    assert refund["OTHER_INCOME"] == refund["VAT_REFUND"]
+    assert abs(refund["TAX_BASE_LEVERED"][0] - refund["PBT"][0] + 365/1.06*.06*.7) < 1e-8
+    assert max(map(abs, refund["BS_RESIDUAL"])) < 1e-8
     print("three-stage installed acceptance passed: constraints, conditions, selection, full run, "
           "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
-          "operating capex classification and cash gaps")
+          "operating capex classification, cash gaps, cash/book bridge, cash solve, selected constraints "
+          "and refund accounting/tax separation")
 
 
 if __name__ == "__main__":
