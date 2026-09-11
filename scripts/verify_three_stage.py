@@ -26,7 +26,8 @@ def main():
         if cli.suffix == ".cmd":
             wrapper = cli.parent.parent / "@dztabel/wwtpfin/npm/wwtp-fin.cjs"
             command = ["node", str(wrapper), *map(str, parts)]
-        result = subprocess.run(command, cwd=out, capture_output=True, text=True)
+        result = subprocess.run(command, cwd=out, capture_output=True, text=True,
+                                encoding="utf-8")
         if result.returncode != expect:
             raise RuntimeError(f"{command[1]}: expected {expect}, got {result.returncode}\n"
                                + result.stdout + result.stderr)

@@ -47,6 +47,8 @@ wwtp-fin schema --kind scheme-set
 
 `compare --contract ... --evidence ...` 将决策合同和证据绑定到比较。合同硬约束自动加入，不能被候选文件遗漏；目标冲突、未知指标为输入错误；固定参数被改变的候选不可行。`conditions` 用 `pending/satisfied/not_applicable` 记录实施条件，后两者必须有依据说明。
 
+用户可以明确选择维持基准：另设候选 ID，使用空 `overrides: {}`，完整登记其理由、代价与条件，照常接受同一合同检查。自动附带的 `base` 行仅作参照，不自动表示来源已核验或已获选择。
+
 兼容性：未传合同的旧 `compare` 仍可探索并按数值目标排序，`feasible` 仅代表已声明的数值/固定边界通过，不代表项目已审批。新增 `numerically_feasible`、`readiness`、`eligible_for_selection` 和 `selectable_shortlist` 分别披露状态；未绑定合同的探索不能 `finalize`。退出 0 只表示存在数值可行候选，不能据此推定有可定稿方案。所有比较输出目录必须为空。
 
 选择哈希采用 UTF-8、排序键、紧凑分隔符的规范 JSON。二进制用户可通过 skill 附带的 `record-selection.py` 记录已发生的确认。最终运行绑定实际计算代码/配置、Python 与 YAML 版本；计算环境变化应重新比较，历史 `verify-final-run` 不要求安装原版本。哈希用于追踪一致性，不是对确认人的身份认证或对资格、审批的独立证明。
