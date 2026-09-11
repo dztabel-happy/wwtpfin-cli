@@ -41,3 +41,5 @@ wwtp-fin schema --kind project-evidence -o schema-out
 - `wwtp-fin/scheme-set/1`：有限候选方案、目标、硬约束、代价、责任、审批与证据定位；不触发自动搜索。
 
 字段不存在、语义不明或材料缺值时，写入转换日志并登记未决；不要为了通过校验而选枚举、补零或把材料全文塞进叙事字段。详见 [INTAKE](INTAKE.md)。
+
+`capital.funding` 的三种比例基数、逐期补助用途，以及 `replacement_assets[].purpose/purpose_basis` 的运营投资分类，见[资金结构与分类契约](FUNDING_STRUCTURE.md)。旧输入可复算；重要建模边界未明确时不能生成选定成果。

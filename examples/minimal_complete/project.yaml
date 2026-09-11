@@ -41,7 +41,7 @@ capital:
     - {name: 土地使用权, cost_wan: 400, life_years: 25, residual_rate: 0, kind: intangible, depreciable: true, investment_origin: construction}
     - {name: 流动资金, cost_wan: 200, life_years: 1, residual_rate: 1, kind: working_capital, depreciable: false, investment_origin: construction}
   replacement_assets:
-    - {name: 第12年设备资本化重置, operation_year: 12, cost_wan: 800, life_years: 10, residual_rate: 0.05, kind: fixed_asset, depreciable: true, vat_basis: net_of_deductible_vat}
+    - {name: 第12年设备资本化重置, operation_year: 12, cost_wan: 800, life_years: 10, residual_rate: 0.05, kind: fixed_asset, depreciable: true, vat_basis: net_of_deductible_vat, purpose: sustaining, purpose_basis: 示例设备更新维持原服务能力，实际项目须核工程范围}
 
 vol_segments:
   - {year_from: 1, year_to: 1, m3d: 18000}

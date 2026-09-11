@@ -98,6 +98,8 @@ def main():
     candidates.append(deepcopy(candidates[0]))
     candidates[1].update(id="lower_price", name="单价降低且补助增加", overrides={
         "tariff_blended_gross": payload["params"]["tariff_blended_gross"] - .01,
+        "capital": {"funding": {"grant_use_wan": [1000, 0], "debt_ratio_basis": "total_investment",
+                                 "evidence_refs": ["synthetic://grant-use"]}},
         "capital_grants": {"recognition": "deferred_income", "output_vat_rate": 0,
             "tranches": [{"period_index": 1, "amount_wan": 1000}],
             "pools": [{"pool_id": "support", "trigger_period_index": 1,
@@ -110,7 +112,7 @@ def main():
     assert costs["selectable_shortlist"] == ["maintain", "lower_price"]
     assert abs(costs["candidates"][1]["objective_value"] - costs["candidates"][0]["objective_value"] - 745.4125) < 1e-7
     subprocess.run([sys.executable, str(helper), str(out / "cost-comparison/scheme-comparison.json"),
-                    "maintain", str(out / "cost-selection.json"), "--confirmed-by", "synthetic acceptance",
+                    "lower_price", str(out / "cost-selection.json"), "--confirmed-by", "synthetic acceptance",
                     "--confirmed-at", "2026-09-11", "--reference", "synthetic://payer",
                     "--purpose", "workflow_validation"], check=True, capture_output=True)
     run("finalize", "--comparison", out / "cost-comparison/scheme-comparison.json",
@@ -118,15 +120,43 @@ def main():
         "--evidence", evidence, "-o", out / "cost-final")
     run("verify-final-run", out / "cost-final")
     cost_final = json.loads((out / "cost-final/deliverable/result.json").read_text(encoding="utf-8"))
-    assert cost_final["scalars"]["payer_net_outflow_wan"] == costs["candidates"][0]["objective_value"]
+    assert cost_final["scalars"]["payer_net_outflow_wan"] == costs["candidates"][1]["objective_value"]
     assert "payer_cashflows" in cost_final["tables"]
+    assert "construction_funding" in cost_final["tables"]
+    assert cost_final["capital"]["grant_use_wan"] == [1000, 0]
+    assert abs(sum(cost_final["capital"]["investment"]) - sum(cost_final["capital"]["debt_draw"])
+               - sum(cost_final["capital"]["equity_draw"]) - 1000) < 1e-7
     changed_spec["objective"] = data["objective"]
     run("compare", "-p", payer_params, "--contract", contract, "--evidence", evidence,
         "--schemes", save("proxy-schemes.json", changed_spec), "-o", out / "proxy")
     proxy = json.loads((out / "proxy/scheme-comparison.json").read_text(encoding="utf-8"))
     assert proxy["candidates"][1]["readiness"] == "not_comparable"
+
+    capex_results = {}
+    for purpose in ("sustaining", "expansion"):
+        for funded in (False, True):
+            trial = deepcopy(payload["params"])
+            trial["calculation_basis"]["dscr"] = "ebitda_minus_tax_minus_sustaining_capex_over_pd"
+            trial["capital"]["replacement_assets"] = [{"name": "运营资产", "operation_year": 3,
+                "cost_wan": 12000, "life_years": 20, "residual_rate": 0,
+                "kind": "fixed_asset", "depreciable": True, "vat_basis": "tax_inclusive_no_credit",
+                "purpose": purpose, "purpose_basis": "synthetic://engineering-scope"}]
+            if funded:
+                trial["operating_loan_tranches"] = [{"name": "专项贷款", "draw_operation_year": 3,
+                    "linked_asset_name": "运营资产", "amount_wan": 12000, "annual_rate": .03,
+                    "term_years": 20, "grace_years": 1, "repayment_method": "annuity"}]
+            name = purpose + ("-funded" if funded else "-unfunded")
+            run("run", "-p", save(name + ".json", trial), "--no-sensitivity", "--no-boundaries",
+                "--compact", "-o", out / name)
+            capex_results[purpose, funded] = json.loads((out / name / "run.json").read_text(encoding="utf-8"))
+    for funded in (False, True):
+        a, b = [capex_results[purpose, funded] for purpose in ("sustaining", "expansion")]
+        assert a["series"]["CUM_CASH"] == b["series"]["CUM_CASH"]
+        assert a["scalars"]["dscr_min"] < 1 < b["scalars"]["dscr_min"]
+        assert (b["scalars"]["cum_cash_min"] >= 0) == funded
     print("three-stage installed acceptance passed: constraints, conditions, selection, full run, "
-          "immutable output, payer ledger, incomplete coverage, misleading price proxy")
+          "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
+          "operating capex classification and cash gaps")
 
 
 if __name__ == "__main__":
