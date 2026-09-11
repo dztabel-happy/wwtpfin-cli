@@ -54,3 +54,7 @@ wwtp-fin verify-final-run runs/run-NNNN
 `finalize` rechecks the contract, evidence, software, full parameters, numerical constraints and implementation-condition records, then runs the existing complete calculation/build chain. Changed inputs, evidence, software or decisions require a new comparison and confirmation. Failed runs remain staging; successful runs are immutable.
 
 The selected run is the sole financial source for exports. New evidence discovered during report writing that affects a calculation returns to modeling/iteration. Never choose the newest trial as the final run. A client can request a report of an explicitly identified baseline or conditional run; clearly label that purpose and preserve its limitations.
+
+## 非整年项目
+
+建设与运营实际期限按原文分别登记，不能向上取整。先读取包内 `docs/TIME_AXIS.md`；声明项目开始月份、期间金额口径和依据，按时间轴的分期数转换数组。开始月份缺失时可登记条件提案并试算，不能标作原始事实。期限改变后须重新核对水量爬坡、设备/融资/拨付事件及显式金额覆盖，不能把旧年度数组当作已转换。确认成果包含实际期间表，并复核总期限、首末期收支和折现时点。

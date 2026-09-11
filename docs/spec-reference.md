@@ -43,3 +43,7 @@ wwtp-fin schema --kind project-evidence -o schema-out
 字段不存在、语义不明或材料缺值时，写入转换日志并登记未决；不要为了通过校验而选枚举、补零或把材料全文塞进叙事字段。详见 [INTAKE](INTAKE.md)。
 
 `capital.funding` 的三种比例基数、逐期补助用途，以及 `replacement_assets[].purpose/purpose_basis` 的运营投资分类，见[资金结构与分类契约](FUNDING_STRUCTURE.md)。旧输入可复算；重要建模边界未明确时不能生成选定成果。
+
+## 实际期限与分期序号
+
+`concession_years` 和 `capital.construction_years` 是实际年数；分期序号及数组长度由时间轴确定。非整年输入必须声明 `time_basis`，金额数组不得擅自按半年再次折算。详见 [时间与期间金额](TIME_AXIS.md)。

@@ -219,10 +219,50 @@ def main():
     assert refund["OTHER_INCOME"] == refund["VAT_REFUND"]
     assert abs(refund["TAX_BASE_LEVERED"][0] - refund["PBT"][0] + 365/1.06*.06*.7) < 1e-8
     assert max(map(abs, refund["BS_RESIDUAL"])) < 1e-8
+    # Fractional durations must survive the actual shipped CLI and selected-run path.
+    trial = deepcopy(payload["params"])
+    trial["concession_years"] = 24.5
+    trial["time_basis"] = {"project_start_month": 1, "annual_amounts_basis": "period_totals",
+                           "evidence_refs": ["synthetic://half-year-periods"]}
+    trial["capital"]["construction_years"] = 1.5
+    for asset in trial["capital"]["assets"]:
+        asset["life_years"] = 24.5
+    fractional_contract = deepcopy(data["decision_contract"])
+    fractional_contract["fixed_parameters"] = {"concession_years": 24.5}
+    fractional_spec = deepcopy(data["scheme_set"])
+    complete = deepcopy(next(c for c in fractional_spec["candidates"] if c["id"] == "complete"))
+    complete["overrides"] = {}
+    fractional_spec.update(include_base=False, candidates=[complete])
+    run("compare", "-p", save("fractional-project.json", trial),
+        "--contract", save("fractional-contract.json", fractional_contract),
+        "--schemes", save("fractional-schemes.json", fractional_spec), "--evidence", evidence,
+        "-o", out / "fractional-comparison")
+    fractional_comparison = out / "fractional-comparison/scheme-comparison.json"
+    compared = json.loads(fractional_comparison.read_text(encoding="utf-8"))
+    assert compared["selectable_shortlist"] == ["complete"]
+    subprocess.run([sys.executable, str(helper), str(fractional_comparison), "complete",
+        str(out / "fractional-selection.json"), "--confirmed-by", "synthetic acceptance",
+        "--confirmed-at", "2026-09-12", "--reference", "synthetic://half-year-periods",
+        "--purpose", "workflow_validation"], check=True, capture_output=True)
+    run("finalize", "--comparison", fractional_comparison,
+        "--selection", out / "fractional-selection.json", "--contract", out / "fractional-contract.json",
+        "--evidence", evidence, "-o", out / "fractional-final")
+    run("verify-final-run", out / "fractional-final")
+    fractional = json.loads((out / "fractional-final/deliverable/result.json").read_text(encoding="utf-8"))
+    axis, series = fractional["period"]["time_axis"], fractional["series"]
+    assert axis["construction_period_years"] == [1, .5]
+    assert axis["operation_period_years"] == [.5] + [1] * 24
+    assert axis["cashflow_times_years"] == [0, 1, 1.5] + list(range(2, 27))
+    assert "time_axis" in fractional["tables"]
+    expected_volume = trial["vol_segments"][0]["m3d"] * trial["days_per_year"] / 2
+    assert abs(series["VOL_TREATED_M3Y"][0] - expected_volume) < 1e-7
+    actual_npv = sum(v / (1 + trial["discount_rate"]) ** t for v, t in
+                     zip(series["CF_TIMED_TOTAL_AFTERTAX"], axis["cashflow_times_years"]))
+    assert abs(fractional["scalars"]["npv_total_aftertax"] - actual_npv) < 1e-7
     print("three-stage installed acceptance passed: constraints, conditions, selection, full run, "
           "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
           "operating capex classification, cash gaps, cash/book bridge, cash solve, selected constraints "
-          "and refund accounting/tax separation")
+          "refund accounting/tax separation and fractional-time selected full run")
 
 
 if __name__ == "__main__":
