@@ -7,6 +7,8 @@ import hashlib
 import json
 from pathlib import Path
 
+from report_source import PURPOSES, verify_source
+
 
 COMMON_MODULES = (
     ("executive_summary", "执行摘要"),
@@ -91,7 +93,17 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("--source-run", required=True)
     parser.add_argument("--mode", choices=("draft", "final"), default="draft")
+    parser.add_argument("--purpose", choices=PURPOSES, default="current",
+                        help="报告来源用途；独立基准、历史或条件报告须明确声明")
+    parser.add_argument("--case", help="案例目录；默认从成果位置识别")
+    parser.add_argument("--cli", default="wwtp-fin", help="用于来源校验的匹配 CLI 可执行文件")
     args = parser.parse_args()
+
+    try:
+        verified_source = verify_source(args.deliverable, args.purpose,
+                                        cli=args.cli, case=args.case)
+    except (OSError, ValueError, KeyError) as error:
+        parser.exit(1, "ERROR: %s\n" % error)
 
     document = _load(args.deliverable / "document.json")
     result = _load(args.deliverable / "result.json")
@@ -114,6 +126,7 @@ def main():
         "source_binding": source_binding(args.deliverable),
         "deliverable": str(args.deliverable.resolve()),
         "mode": args.mode,
+        **verified_source,
         "transaction_mode": transaction_mode,
         "modules": [
             {"module_id": module_id, "title": title,

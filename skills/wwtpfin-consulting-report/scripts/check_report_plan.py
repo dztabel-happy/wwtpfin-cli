@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from init_report_plan import COMMON_MODULES, MODE_MODULES, source_binding
+from report_source import verify_source
 
 
 ALLOWED = {"body", "appendix", "chart_source", "workpaper_only", "audit_only",
@@ -32,8 +33,20 @@ def _unique(items, key, label, errors):
     return set(values)
 
 
-def validate(deliverable: Path, plan_path: Path):
+def validate(deliverable: Path, plan_path: Path, *, cli: str = "wwtp-fin", case=None):
     plan = _load(plan_path)
+    try:
+        if plan.get("deliverable") != str(deliverable.resolve()):
+            raise ValueError("报告计划绑定的成果目录与校验来源不一致")
+        recorded_case = (plan.get("source_context") or {}).get("case")
+        if case and recorded_case and Path(case).resolve() != Path(recorded_case).resolve():
+            raise ValueError("指定案例与报告计划绑定案例不一致")
+        verified_source = verify_source(deliverable, plan.get("report_purpose"),
+                                        cli=cli, case=case or recorded_case)
+        if any(plan.get(key) != value for key, value in verified_source.items()):
+            raise ValueError("报告用途、来源身份或必留标签与来源成果不一致")
+    except (OSError, ValueError, KeyError) as error:
+        return [str(error)]
     document = _load(deliverable / "document.json")
     table_index = _load(deliverable / "tables" / "index.json")
     figure_index = _load(deliverable / "figures" / "index.json")
@@ -177,8 +190,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("deliverable", type=Path)
     parser.add_argument("report_plan", type=Path)
+    parser.add_argument("--case", help="核对案例目录与计划绑定一致")
+    parser.add_argument("--cli", default="wwtp-fin", help="用于来源校验的匹配 CLI 可执行文件")
     args = parser.parse_args()
-    errors = validate(args.deliverable, args.report_plan)
+    errors = validate(args.deliverable, args.report_plan, cli=args.cli, case=args.case)
     if errors:
         for error in errors:
             print("ERROR: %s" % error)

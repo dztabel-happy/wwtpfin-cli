@@ -8,6 +8,8 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from report_source import PURPOSES
+
 
 MAX_TABLES = 40
 MIN_NARRATIVE_CHARS_PER_TABLE = 250
@@ -82,6 +84,10 @@ def validate(path: Path, allow_placeholders: bool = False,
                 for line in body if line.lstrip().startswith("#")]
     if plan_path:
         plan = json.loads(plan_path.read_text(encoding="utf-8"))
+        notice = plan.get("required_notice")
+        visible_body = re.sub(r"<!--.*?-->", "", "\n".join(body), flags=re.DOTALL)
+        if plan.get("report_purpose") not in PURPOSES or not notice or notice not in visible_body:
+            errors.append("成稿必须保留报告计划中的完整来源用途和条件标签")
         omitted = {str(item.get("title") or "").strip()
                    for item in plan.get("modules") or []
                    if item.get("disposition") == "user_required"}

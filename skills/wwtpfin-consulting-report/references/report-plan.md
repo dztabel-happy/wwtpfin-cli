@@ -2,6 +2,10 @@
 
 `report-plan.json` is the module, coverage and routing ledger for one verified run. It closes the full report architecture before it closes semantic blocks, tables, figures, warnings, unresolved items, required user inputs and registered supplements.
 
+The initializer and checker actively invoke the selected `wwtp-fin` executable (`--cli`, default `wwtp-fin`). `report_purpose` is `current` by default: its exact run must pass `verify-final-run --case`. Explicit `historical` verifies historical package integrity and carries a history-only notice. Explicit `baseline` requires an unselected package and, within a case, its current baseline registration. Explicit `conditional_research` requires a selected conditional-research run and checks current selection when a case is present. A new case input or source therefore invalidates an existing current, baseline or conditional plan at its next check.
+
+`source_context` binds the case, exact run, selection scope, synthetic/real selection purpose and pending-condition count. `required_notice` must match that verified context and appear intact in the visible manuscript. It preserves purpose and pending/synthetic labels through export. Plans made before these fields existed must be initialized again with an explicit source purpose. `mode` controls report content completeness only; `final` never declares an implementation approved.
+
 ```json
 {
   "schema": "wwtpfin/report-plan/4",
@@ -9,6 +13,15 @@
   "source_run": "run-0001",
   "deliverable": "/absolute/path/to/runs/run-0001/deliverable",
   "mode": "draft",
+  "report_purpose": "current",
+  "source_context": {
+    "case": "/absolute/path/to/case",
+    "run": "/absolute/path/to/runs/run-0001",
+    "selection_scope": "implementation",
+    "selection_purpose": "selected_scheme",
+    "pending_conditions": 0
+  },
+  "required_notice": "本报告使用案例当前登记的选定成果；报告内容完成不代表实施已获批准。",
   "transaction_mode": "BOT",
   "modules": [
     {"module_id": "construction_scope_schedule", "disposition": "user_required", "reason": "可研及建设计划未提供"}

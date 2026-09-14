@@ -73,5 +73,12 @@ if [ -n "$CORE_REPO" ]; then
   fi
 fi
 
-npm pack --dry-run >/dev/null 2>&1
+npm pack --dry-run --json | node -e '
+let input = "";
+process.stdin.on("data", chunk => input += chunk);
+process.stdin.on("end", () => {
+  const files = JSON.parse(input).flatMap(pack => pack.files.map(file => file.path));
+  const unexpected = files.filter(path => /(^|\/)__pycache__(\/|$)|\.py[co]$/.test(path));
+  if (unexpected.length) throw new Error("Python cache files in npm package: " + unexpected.join(", "));
+});'
 echo "public package verification passed"

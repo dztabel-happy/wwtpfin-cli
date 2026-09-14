@@ -309,9 +309,16 @@ def main():
     save("current-case/input/evidence.json", json.loads(evidence.read_text(encoding="utf-8")))
     save("current-case/input/decision-contract.json", data["decision_contract"])
     old_comparison = case / "comparisons/first/scheme-comparison.json"
-    old_comparison.parent.mkdir(parents=True)
-    shutil.copy2(comparison, old_comparison)
-    spec_path = save("current-case/comparisons/first/scheme-set.json", data["scheme_set"])
+    spec_path = save("current-case/input/scheme-set.json", data["scheme_set"])
+    run("compare", "-p", "current-case/input/project.json", "--evidence", inputs / "evidence.json",
+        "--contract", inputs / "decision-contract.json", "--schemes", spec_path,
+        "-o", old_comparison.parent)
+    assert json.loads(old_comparison.read_text(encoding="utf-8"))["base_source"] == str(inputs / "project.json")
+    selection = out / "current-case-selection.json"
+    subprocess.run([sys.executable, str(helper), str(old_comparison), "complete", str(selection),
+        "--confirmed-by", "synthetic acceptance", "--confirmed-at", "2026-09-14",
+        "--reference", "synthetic://current-case", "--purpose", "workflow_validation"],
+        check=True, capture_output=True)
     message, response = case / "user.md", case / "response.md"
     message.write_text("请比较现有条件下的方案。", encoding="utf-8")
     response.write_text("本轮比较及完整约束已检查；保留选择理由。", encoding="utf-8")
@@ -331,15 +338,60 @@ def main():
     run("case", "checkpoint", case, "--stage", 3, "--message", message,
         "--response", response, "--kind", "selected", "--artifact", selected)
     run("verify-final-run", selected, "--case", case)
+    report_scripts = assets / "skills/wwtpfin-consulting-report/scripts"
+
+    def report_tool(script, *parts, expect=0):
+        result = subprocess.run([sys.executable, str(report_scripts / script),
+            *map(str, parts), "--cli", str(cli)], capture_output=True, text=True, encoding="utf-8")
+        if result.returncode != expect:
+            raise RuntimeError(f"{script}: expected {expect}, got {result.returncode}\n"
+                               + result.stdout + result.stderr)
+        return result.stdout + result.stderr
+
+    report_plan = out / "current-report-plan.json"
+    report_tool("init_report_plan.py", selected / "deliverable", report_plan,
+                "--source-run", selected.name, "--case", case)
+    plan = json.loads(report_plan.read_text(encoding="utf-8"))
+    assert "模拟流程验收" in plan["required_notice"]
+    # Resolve content routing so a later failure isolates source currentness.
+    for section in ("modules", "blocks", "warnings", "unresolved"):
+        for item in plan[section]:
+            item["disposition"] = "body"
+    for item in plan["tables"]:
+        if item["report_role"] == "body":
+            item["section"] = "财务评价"
+        elif item["report_role"] == "appendix":
+            item.update(disposition="appendix", section="财务附表", reason="合成验收复核")
+    for item in plan["figures"]:
+        item.update(disposition="not_applicable", reason="本轮仅验证报告来源，不渲染")
+    report_plan.write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+    report_tool("check_report_plan.py", selected / "deliverable", report_plan)
     current_params["opex_items"][0]["base_wan"] *= 10
     save("current-case/input/project.json", current_params)
     stale = json.loads(run("case", "status", case))
     assert stale["state"] == "needs_update" and stale["current_artifact"] is None
     run("verify-final-run", selected)  # historical package remains intact
     run("verify-final-run", selected, "--case", case, expect=1)
+    assert "报告来源校验失败" in report_tool(
+        "check_report_plan.py", selected / "deliverable", report_plan, expect=1)
+    stale_plan = out / "stale-report-plan.json"
+    report_tool("init_report_plan.py", selected / "deliverable", stale_plan,
+                "--source-run", selected.name, expect=1)
+    assert not stale_plan.exists()
+    historical_plan = out / "historical-report-plan.json"
+    report_tool("init_report_plan.py", selected / "deliverable", historical_plan,
+                "--source-run", selected.name, "--purpose", "historical")
+    assert "历史成果报告" in json.loads(historical_plan.read_text(encoding="utf-8"))["required_notice"]
     run("finalize", "--comparison", old_comparison, "--selection", selection,
         "--contract", inputs / "decision-contract.json", "--evidence", inputs / "evidence.json",
         "-o", case / "runs/stale", expect=1)
+    external_stale = out / "outside-case-stale"
+    external_comparison = out / "copied-case-comparison.json"
+    shutil.copy2(old_comparison, external_comparison)
+    run("finalize", "--comparison", external_comparison, "--selection", selection,
+        "--contract", inputs / "decision-contract.json", "--evidence", inputs / "evidence.json",
+        "-o", external_stale, expect=1)
+    assert not external_stale.exists()
     run("case", "checkpoint", case, "--stage", 1, "--message", message, "--response", response)
     pending = json.loads(run("case", "status", case))
     assert pending["state"] == "in_progress" and pending["current_artifact"] is None
@@ -347,7 +399,8 @@ def main():
     print("three-stage installed acceptance passed: numeric-array input rejection, constraints, conditions, explicit conditional research selection, full run, "
           "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
           "operating capex classification, cash gaps, cash/book bridge, cash solve, selected constraints "
-          "refund accounting/tax separation fractional-time selected full run, current-case invalidation and historical preservation")
+          "refund accounting/tax separation fractional-time selected full run, current-case invalidation, "
+          "external-output source gate, report source gate and explicit historical preservation")
 
 
 if __name__ == "__main__":
