@@ -43,6 +43,28 @@ def main():
     comparison = out / "comparison/scheme-comparison.json"
     data = json.loads(comparison.read_text(encoding="utf-8"))
     rows = {row["id"]: row for row in data["candidates"]}
+
+    def attach_synthetic_research(spec, parameters):
+        """Adapt the bounded synthetic research when the acceptance fixture changes.
+
+        This is a test fixture, not evidence or a research generator for real projects.
+        """
+        research = deepcopy(data["scheme_set"]["research"])
+        ids = [row["id"] for row in spec["candidates"]]
+        paths = sorted({key for row in spec["candidates"] for key in row["overrides"]})
+        for direction in research["directions"]:
+            if direction["status"] == "evaluated":
+                direction.update(candidate_ids=ids, paths=paths)
+        research["combinations"] = ([{
+            "candidate_ids": ids, "result_candidate_id": None,
+            "basis": "合成任务比较互斥的完整报价/筹资安排，不相加两份报价。",
+            "evidence_refs": ["synthetic://exclusive-fixtures"]}] if len(ids) > 1 else [])
+        volumes = deepcopy(parameters["vol_segments"])
+        for item in volumes:
+            item["m3d"] *= .9
+        research["scenarios"][0]["overrides"] = {"vol_segments": volumes}
+        spec["research"] = research
+
     assert not rows["cash_gap"]["numerically_feasible"]
     assert rows["conditional"]["readiness"] == "conditions_pending"
     assert data["selectable_shortlist"] == ["complete"]
@@ -50,7 +72,7 @@ def main():
     subprocess.run([sys.executable, str(helper), str(comparison), "complete",
                     str(out / "selection.json"), "--confirmed-by", "synthetic acceptance",
                     "--confirmed-at", "2026-09-11", "--reference", "synthetic://acceptance",
-                    "--purpose", "workflow_validation"], check=True, capture_output=True)
+                    "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"], check=True, capture_output=True)
     selection = out / "selection.json"
     final = out / "run-0001"
     run("finalize", "--comparison", comparison, "--selection", selection,
@@ -70,7 +92,7 @@ def main():
     research_command = [sys.executable, str(helper), str(comparison), "conditional",
         str(research_selection), "--confirmed-by", "synthetic acceptance",
         "--confirmed-at", "2026-09-14", "--reference", "synthetic://conditional-assumptions",
-        "--purpose", "workflow_validation"]
+        "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"]
     assert subprocess.run(research_command, capture_output=True).returncode == 2
     assert not research_selection.exists()
     subprocess.run(research_command + ["--selection-scope", "conditional_research"],
@@ -147,6 +169,7 @@ def main():
                        "start_period_index": 3, "amortisation_years": 25}]}})
     changed_spec = {"schema": "wwtp-fin/scheme-set/1", "include_base": False,
                     "objective": objective, "hard_constraints": [], "candidates": candidates}
+    attach_synthetic_research(changed_spec, params)
     run("compare", "-p", payer_params, "--contract", save("cost-contract.json", changed_contract),
         "--evidence", evidence, "--schemes", save("cost-schemes.json", changed_spec), "-o", out / "cost-comparison")
     costs = json.loads((out / "cost-comparison/scheme-comparison.json").read_text(encoding="utf-8"))
@@ -155,7 +178,7 @@ def main():
     subprocess.run([sys.executable, str(helper), str(out / "cost-comparison/scheme-comparison.json"),
                     "lower_price", str(out / "cost-selection.json"), "--confirmed-by", "synthetic acceptance",
                     "--confirmed-at", "2026-09-11", "--reference", "synthetic://payer",
-                    "--purpose", "workflow_validation"], check=True, capture_output=True)
+                    "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"], check=True, capture_output=True)
     run("finalize", "--comparison", out / "cost-comparison/scheme-comparison.json",
         "--selection", out / "cost-selection.json", "--contract", out / "cost-contract.json",
         "--evidence", evidence, "-o", out / "cost-final")
@@ -227,6 +250,7 @@ def main():
         row = deepcopy(candidates[0])
         row.update(id=pid, name=pid, overrides={"tariff_blended_gross": price})
         cash_spec["candidates"].append(row)
+    attach_synthetic_research(cash_spec, trial)
     run("compare", "-p", cash_params, "--contract", save("cash-contract.json", cash_contract),
         "--evidence", evidence, "--schemes", save("cash-schemes.json", cash_spec),
         "-o", out / "cash-comparison")
@@ -243,7 +267,7 @@ def main():
     subprocess.run([sys.executable, str(helper), str(cash_comparison), "cash_pass",
         str(out / "cash-selection.json"), "--confirmed-by", "synthetic acceptance",
         "--confirmed-at", "2026-09-11", "--reference", "synthetic://cash",
-        "--purpose", "workflow_validation"], check=True, capture_output=True)
+        "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"], check=True, capture_output=True)
     run("finalize", "--comparison", cash_comparison, "--selection", out / "cash-selection.json",
         "--contract", out / "cash-contract.json", "--evidence", evidence, "-o", out / "cash-final")
     run("verify-final-run", out / "cash-final")
@@ -274,6 +298,7 @@ def main():
     complete = deepcopy(next(c for c in fractional_spec["candidates"] if c["id"] == "complete"))
     complete["overrides"] = {}
     fractional_spec.update(include_base=False, candidates=[complete])
+    attach_synthetic_research(fractional_spec, trial)
     run("compare", "-p", save("fractional-project.json", trial),
         "--contract", save("fractional-contract.json", fractional_contract),
         "--schemes", save("fractional-schemes.json", fractional_spec), "--evidence", evidence,
@@ -284,7 +309,7 @@ def main():
     subprocess.run([sys.executable, str(helper), str(fractional_comparison), "complete",
         str(out / "fractional-selection.json"), "--confirmed-by", "synthetic acceptance",
         "--confirmed-at", "2026-09-12", "--reference", "synthetic://half-year-periods",
-        "--purpose", "workflow_validation"], check=True, capture_output=True)
+        "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"], check=True, capture_output=True)
     run("finalize", "--comparison", fractional_comparison,
         "--selection", out / "fractional-selection.json", "--contract", out / "fractional-contract.json",
         "--evidence", evidence, "-o", out / "fractional-final")
@@ -317,7 +342,7 @@ def main():
     selection = out / "current-case-selection.json"
     subprocess.run([sys.executable, str(helper), str(old_comparison), "complete", str(selection),
         "--confirmed-by", "synthetic acceptance", "--confirmed-at", "2026-09-14",
-        "--reference", "synthetic://current-case", "--purpose", "workflow_validation"],
+        "--reference", "synthetic://current-case", "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"],
         check=True, capture_output=True)
     message, response = case / "user.md", case / "response.md"
     message.write_text("请比较现有条件下的方案。", encoding="utf-8")

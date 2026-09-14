@@ -59,3 +59,95 @@ candidates:
     evidence_refs:
     - synthetic://workflow
     note: 合成测试条件；不得用于现实项目
+research:
+  directions:
+  - id: service_demand
+    domain: service_demand
+    status: not_applicable
+    candidate_ids: []
+    paths: []
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+  - id: capital_and_renewal
+    domain: capital_and_renewal
+    status: not_applicable
+    candidate_ids: []
+    paths: []
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+  - id: operations
+    domain: operations
+    status: not_applicable
+    candidate_ids: []
+    paths: []
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+  - id: tax_and_support
+    domain: tax_and_support
+    status: not_applicable
+    candidate_ids: []
+    paths: []
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+  - id: financing_and_payment
+    domain: financing_and_payment
+    status: evaluated
+    candidate_ids:
+    - cash_gap
+    - conditional
+    - complete
+    paths:
+    - tariff_blended_gross
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+  - id: delivery_and_contract
+    domain: delivery_and_contract
+    status: not_applicable
+    candidate_ids: []
+    paths: []
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+  assumptions:
+  - id: volume
+    paths:
+    - vol_segments
+    kind: estimate
+    basis: 合成测试将处理量作为估计，保守分支为各期减少10%；不是现实水量预测方法。
+    evidence_refs:
+    - synthetic://demand-range
+    material: true
+    scenario_ids:
+    - lower_volume
+  scenarios:
+  - id: lower_volume
+    assumption_ids:
+    - volume
+    basis: 合成研究的共同水量下界；所有候选均保持原报价重算收入和变动成本。
+    evidence_refs:
+    - synthetic://demand-range
+    overrides:
+      vol_segments:
+      - year_from: 1
+        year_to: 1
+        m3d: 16200
+      - year_from: 2
+        year_to: 2
+        m3d: 21600
+      - year_from: 3
+        year_to: 25
+        m3d: 25650
+  combinations:
+  - candidate_ids:
+    - conditional
+    - complete
+    result_candidate_id: null
+    basis: 同一服务只采用一种报价，两个报价互斥，不能相加。
+    evidence_refs:
+    - synthetic://exclusive-prices
+  stopping_reason: 任务范围内报价候选及共同水量下界已逐一测算；工程税务等合成边界固定，只验证研究绑定，不证明现实项目最优。

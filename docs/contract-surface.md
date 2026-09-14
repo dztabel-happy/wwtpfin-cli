@@ -100,3 +100,9 @@ wwtp-fin schema --kind scheme-set
 不能把技术底稿、审计表或全部附表机械拼接成报告。
 
 产品边界见 [boundary.md](boundary.md)，三阶段职责与验收见 [THREE_STAGE_PRODUCT.md](THREE_STAGE_PRODUCT.md)。
+
+## 研究推荐与单次计算
+
+`compare` 可以成功输出探索比较，退出 0 仅表示存在满足声明硬约束的候选；还须读取 `research_review.ready_for_selection` 和 `issues`。无 `research` 的旧方案集保留试算能力，不能进入新版选定成果。
+
+`finalize` 在原门禁上重新核验研究结论，并要求选择记录的 `decision_reason`、`acknowledged_research_status`；选择助手需要 `--reason`，记录真实用户取舍。旧最终包的 `verify-final-run` 继续验证其历史完整性。研究输入、输出与边界见 [研究与推荐约束](RESEARCH_REVIEW.md)。

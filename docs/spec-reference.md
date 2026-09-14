@@ -38,7 +38,7 @@ wwtp-fin schema --kind project-evidence -o schema-out
 
 - `wwtp-fin/input-warnings/1`：根对象包含 `schema` 与 `warnings[]`；每条至少有 `id`、`path`、`message`。
 - `wwtp-fin/deliverable/1`：成果包清单，包含项目名、评价日、工件列表与 `quality_passed`。
-- `wwtp-fin/scheme-set/1`：有限候选方案、目标、硬约束、代价、责任、审批与证据定位；不触发自动搜索。
+- `wwtp-fin/scheme-set/1`：有限候选方案、目标、硬约束、代价、责任、审批与证据定位；可内嵌 research，对全部候选执行已声明共同情景及研究检查，不触发无界自动搜索。
 
 字段不存在、语义不明或材料缺值时，写入转换日志并登记未决；不要为了通过校验而选枚举、补零或把材料全文塞进叙事字段。详见 [INTAKE](INTAKE.md)。
 

@@ -13,6 +13,17 @@ Read `schema --kind input`, `schema --kind project-evidence`, `docs/INTAKE.md`, 
 
 Keep source tables in `supporting[]` with `table_role` and `{columns, rows}`. Do not turn them into prose or detached scalars.
 
+## Meaning before mapping
+
+Check the full sentence, table heading, footnote and time basis before assigning a number to a model field. Preserve qualifiers in the source-to-field ledger. In particular:
+
+- A peak, rainy-season, design or permitted capacity is not an annual average operating volume. A forecast endpoint is not an observed annual series. Deriving a working series requires an explicit method and independently stated assumptions about utilization, seasonality, growth and allocation.
+- A whole-system amount is not automatically the incremental project's amount. Record the existing assets, shared services and incremental boundary before allocating quantities or costs.
+- A stated asset life is not necessarily a project-calendar replacement date. Relate commissioning, operating age, renewal scope and the comparison end date; explain whether terminal value or a late renewal is included.
+- A nominal amount, constant-price amount, tax-inclusive amount, accounting item and cash payment can share a label without sharing a calculation basis. Preserve both the original basis and the transformation.
+
+If the source does not establish the required meaning, leave that source fact unresolved. An authorized research estimate may fill a separately labeled working input, but its `basis` must explain the transformation, alternatives and uncertainty rather than repeat the source title. For material estimates or design choices, bind the affected canonical paths to `research.assumptions` and actual comparison scenarios. A narrow numerical range cannot cure a wrong interpretation of the source.
+
 For marginal water-volume pricing, preserve cumulative thresholds, units, multiplier basis and contractual status. A binding, source-backed rule may enter `revenue.marginal_volume_tiers`. In source reproduction, a proposed rule enters `source_declared_baseline` only when that source actually uses it; retain `proposed_not_binding`. A separately authorized proposed pricing arrangement may enter a conditional research candidate when its thresholds, multipliers, rationale and implementation conditions are explicit. The tiers are marginal: a higher-tier multiplier never applies retroactively to lower-tier volume.
 
 ## Source authority and conflict gate
@@ -24,7 +35,7 @@ Normalize scope, basis, unit and effective period before treating two statements
 3. an internally consistent explicit statement over a derived value;
 4. effective date when the earlier criteria do not decide the matter.
 
-File type, source count, newest date or a convenient calculation result cannot decide authority by themselves. A clearly final or adopted source may displace a draft, superseded, legacy or out-of-scope source only when the status and scope are recorded in the conflict ledger. Otherwise keep the conflict unresolved: do not write either value into a calculation field, silently choose a reading, average the values or turn either value into a candidate.
+File type, source count, newest date or a convenient calculation result cannot decide authority by themselves. A clearly final or adopted source may displace a draft, superseded, legacy or out-of-scope source only when the status and scope are recorded in the conflict ledger. Otherwise keep the conflict unresolved: do not write either value as the accepted source fact, silently choose a reading, average the values or present either reading as an actionable measure. If the user has authorized research, separately identified interpretations can support conditional calculations when their meaning, methods and limits are explicit; they do not resolve the source conflict.
 
 Use `unresolved`, `required_user_inputs`, `declared_basis`, or an applicable declaration channel for unresolved material. A statement in a supplied report remains source-backed at its actual evidence state even when the underlying primary attachment is absent; map the statement and register the missing primary evidence separately. Do not relabel the supplied statement as `source_absent`. To reproduce the supplied scheme, explicit terms and assumptions actually used by its calculation may enter `source_declared_baseline` with their original evidence state, including `proposed_not_binding`; this is reproduction, not confirmation, recommendation or proof of contractual effect.
 
@@ -52,3 +63,5 @@ The adopted source scheme enters modeling as `source_declared_baseline`. It is n
 Map source-backed facts at their actual evidence state. Put missing project evidence in `unresolved` or `required_user_inputs`; do not use placeholders or arbitrary enum values. An authorized conditional working input can also contain supported estimates and explicit proposals, with their method, uncertainty and intended use recorded separately. Run `build`, read every `warnings.json` item, then either correct the input or record the limitation. Run `verify-deliverable` before handoff.
 
 The CLI determines financial calculation and structured semantics. The agent handles source interpretation, supported engineering estimates and authorized proposal design, while keeping those evidence categories distinct.
+
+Do not treat the existence of a source locator, an evidence identifier, an `unverified` label or a successful calculation as proof of a sound estimate. Check the source semantics and estimation method first; then use common scenarios to examine the consequence of remaining uncertainty.

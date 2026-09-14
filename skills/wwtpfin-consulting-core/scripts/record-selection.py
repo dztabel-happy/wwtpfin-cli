@@ -22,12 +22,20 @@ def main():
     parser.add_argument("--confirmed-by", required=True)
     parser.add_argument("--confirmed-at", required=True)
     parser.add_argument("--reference", required=True)
+    parser.add_argument("--reason", required=True,
+                        help="the user's stated reason/tradeoff for this choice, not an invented optimality claim")
     parser.add_argument("--purpose", required=True,
                         choices=("selected_scheme", "workflow_validation"))
     parser.add_argument("--selection-scope", choices=("implementation", "conditional_research"),
                         help="scope explicitly confirmed by the user; omission requires implementation conditions")
     args = parser.parse_args()
     comparison = json.loads(args.comparison.read_text(encoding="utf-8"))
+    review = comparison.get("research_review", {})
+    if not review.get("ready_for_selection"):
+        parser.error("research is incomplete; a conditional choice does not waive research gaps: "
+                     + "; ".join(str(v) for v in review.get("issues", [])))
+    if not args.reason.strip():
+        parser.error("the recorded choice needs the user's reason or accepted tradeoff")
     shortlist = ("research_selectable_shortlist" if args.selection_scope == "conditional_research"
                  else "selectable_shortlist")
     if args.candidate_id not in comparison.get(shortlist, []):
@@ -40,6 +48,8 @@ def main():
         "purpose": args.purpose, "candidate_id": args.candidate_id,
         "confirmed_by": args.confirmed_by, "confirmed_at": args.confirmed_at,
         "confirmation_reference": args.reference,
+        "decision_reason": args.reason,
+        "acknowledged_research_status": review["status"],
         "comparison_sha256": digest(comparison),
         "resolved_params_sha256": candidate["resolved_params_sha256"],
     }

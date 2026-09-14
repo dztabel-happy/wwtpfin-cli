@@ -6,7 +6,7 @@
 
 ```bash
 wwtp-fin compare -p examples/minimal_complete/project.yaml --evidence examples/minimal_complete/evidence.json --contract examples/three_stage/decision-contract.yaml --schemes examples/three_stage/scheme-set.yaml -o out/three-stage/comparison
-python3 skills/wwtpfin-consulting-core/scripts/record-selection.py out/three-stage/comparison/scheme-comparison.json complete out/three-stage/selection.json --confirmed-by "合成验收" --confirmed-at 2026-09-11 --reference "synthetic://workflow-example" --purpose workflow_validation
+python3 skills/wwtpfin-consulting-core/scripts/record-selection.py out/three-stage/comparison/scheme-comparison.json complete out/three-stage/selection.json --confirmed-by "合成验收" --confirmed-at 2026-09-11 --reference "synthetic://workflow-example" --purpose workflow_validation --reason "合成验收选择并保留研究限制"
 wwtp-fin finalize --comparison out/three-stage/comparison/scheme-comparison.json --selection out/three-stage/selection.json --contract examples/three_stage/decision-contract.yaml --evidence examples/minimal_complete/evidence.json -o out/three-stage/run-0001
 wwtp-fin verify-final-run out/three-stage/run-0001
 ```
