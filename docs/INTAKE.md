@@ -32,6 +32,8 @@ wwtp-fin intake -p project-draft.yaml -o intake-advice.json
 
 `supporting[].as_of` 或 `provided_by` 在原件未载时可写 `null`，但必须填写 `metadata_gap_reason`，且 `evidence_state` 不得标为 `verified`。该证据只能进入待补台账，不能支持确定裁决；禁止用当前日期、转换者名称或“项目单位”等占位值补齐。
 
+普通来源的 `supporting[].as_of` 可按原件精度填 `YYYY-MM-DD` 或 `YYYY-MM`；封面只有编制年月时直接保留年月，不补造具体日，也不视为日期缺失。年月只用于资料登记；`decisions.*.as_of`、评价基准日和财务基准等用于判断的日期仍按各自完整日历日契约校验。来源元数据被接纳不等于政策效力或适用资格已核定。
+
 ## 三阶段工作方式
 
 1. **建模。**识别固定事实、可协商参数、情景假设和缺失资料，建立来源或条件基线并讨论方向。工程估算须记录地区、版本日期、调整系数、价税口径和来源；经授权、明确标识的研究估算可进入 CLI，不冒充审定成本。
