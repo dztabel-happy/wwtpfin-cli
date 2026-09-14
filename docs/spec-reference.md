@@ -11,7 +11,7 @@ wwtp-fin schema --kind project-evidence -o schema-out
 
 | 字段域 | 主要字段 | 说明 |
 | --- | --- | --- |
-| 项目与期间 | `project_name`、`mode`、`concession_years`、`evaluation_date`、`base_calendar_year` | 期限和模式必须明确；运营期不含建设期。评价日可缺省；未给日历基年时只输出相对期间，显式日历基年仅作展示轴，不成为评价日或政策证据日期；日期相关裁决保持未决。 |
+| 项目与期间 | `project_name`、`mode`、`concession_years`、`evaluation_date`、`base_calendar_year` | 期限和模式必须明确；运营期不含建设期。日历基年是项目开始年（有建设期为建设开始年，无建设期为运营开始年），运营首年结合开始月份和建设年数推导。评价日可缺省；未给基年时只输出相对期间，显式基年仅作展示轴，不成为评价日或政策证据日期；日期相关裁决保持未决。 |
 | 声明口径 | `calculation_basis`、`declared_basis` | 前者影响计算；后者用于呈现、对照与追溯，不替代计算字段。 |
 | 建设与资产 | `capital`、`transfer_price_wan`、`terminal_value_method` | 建设计划、资产、提款、IDC、费用化利息、更新资产、长期资产进项税调整与期末事件在此域闭合。 |
 | 水量与服务 | `design_capacity_m3d`、`vol_segments`、`water`、`billable_cap_*` | 需求、处理、计费、成本驱动口径分开声明。 |

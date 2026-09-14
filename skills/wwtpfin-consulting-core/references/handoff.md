@@ -23,5 +23,6 @@ DocxKit owns editable Word layout, numbering, captions, cross-references and pag
 - Do not combine assets from different runs.
 - Do not paste audit tables or raw machine column names into the report.
 - Report the source run number with every export.
+- For a funding schedule, use `cash_funding_summary` with `cash_funding_components`; retain the period, sources, uses, net movement and closing balance. Do not reconstruct only selected components such as operating income and loan payments. Compare every displayed amount with the verified source and check opening balance + sources - uses = closing balance. A separate reserve arrangement must reconcile to these balances and disclose its authorization; do not describe unrestricted cash as an established reserve.
 
 Do not introduce code integration between the products. The agent coordinates files and preserves source references.

@@ -73,6 +73,7 @@ Read [conversion discipline](references/conversion-discipline.md) before materia
 - `quality.json`: whether the completed content package passed its quality gate.
 - `warnings.json`: input-shape information requiring correction, an explicit limitation, or an unresolved registration.
 - `result.json`: calculation, checks, analysis, decisions, evidence and downstream data.
+- `tables/cash_funding_summary.csv` and `cash_funding_components.csv`: complete period-by-period cash sources and uses, including construction, operating capital contributions, loans, grants, renewals and distributions. Use these verified tables for funding explanations; distinguish cash receipts from revenue and cash payments from costs. Trace a funding-gap amount and period to the closing-balance series and the input assumptions that created the relevant spending. A calculated deficit is conditional on those assumptions, not proof that an estimated renewal date or amount is established.
 - `document.json`: complete authoritative machine semantics for downstream selection.
 - `report.md`: deterministic financial consulting core only: calculation basis, key metrics, financial analysis, decisions, risks and required inputs. It is not a complete project report.
 

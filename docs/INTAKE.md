@@ -26,7 +26,7 @@ wwtp-fin intake -p project-draft.yaml -o intake-advice.json
 
 利润分配政策应一次讨论盈余公积计提比例、累计上限比例和分红比例；三者影响股利、留存收益、累计现金、资本金回报和资产负债表，不得以 0 或 100% 代填缺失事实。授权研究中的分配提案须单独说明依据和影响，不代表公司已作决议。
 
-三个字段按实际资料与启用路径处理：`evaluation_date` 缺失时不补固定日期；未给 `base_calendar_year` 时成果只写建设期/运营第 N 年，显式 `base_calendar_year` 仅生成展示年度轴，不成为评价日或政策证据日期，依赖日期的裁决仍保持未决；`revenue.settlement_channel` 缺失时保持未知，不得回填 `direct_from_users`；只有 `sensitivity_deltas` 非空、确需运行敏感性分析时才填写 `sensitivity_target`。
+三个字段按实际资料与启用路径处理：`evaluation_date` 缺失时不补固定日期；`base_calendar_year` 填项目开始所在年（有建设期填建设开始年，无建设期填运营开始年），运营首年按开始月份和建设实际年数推导，详见 [时间与期间金额](TIME_AXIS.md)。未给基年时成果只写建设期/运营第 N 年，显式基年仅生成展示年度轴，不成为评价日或政策证据日期，依赖日期的裁决仍保持未决；`revenue.settlement_channel` 缺失时保持未知，不得回填 `direct_from_users`；只有 `sensitivity_deltas` 非空、确需运行敏感性分析时才填写 `sensitivity_target`。
 
 合同按日均计费水量分档时，使用 `revenue.marginal_volume_tiers`：逐档填写累计水量上限和相对当期有效服务单价的倍率，最后一档 `up_to_m3d: null`。它是边际计价，不能把超额档倍率作用于全部水量；合同只写“超额另行计价”但未给阈值或倍率时保持未决，不得启用分档。
 

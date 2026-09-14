@@ -32,7 +32,7 @@ wwtp-fin schema --kind scheme-set
 | `run` | `-p` 参数文件，可选 `--evidence` | stdout 或 `run.json`：计算、检查、分析、决策、表格数据与证据。 |
 | `build` | `-p`、`--evidence`、`-o` | 可核验财务咨询成果包：完整机器语义 `document.json`、财务核心稿 `report.md`、计算结果、质量、告警、表格与图表语义。 |
 | `solve` | `-p` 与目标/变量 | 一维反求结果；无解时返回 4。 |
-| `sensitivity` | `-p` | 敏感性表与排序。 |
+| `sensitivity` | `-p` | 敏感性表与排序。个别子情景违反参数约束时，该点标为不可计算并保留原因；不撤销有效基准，也不自动改变其融资条件。含不可计算档位的因素不参与排序与绘图，已计算点仍保留在明细中。 |
 | `compare` | `-p`、`--schemes`、`-o` | 有限候选逐案重算、硬约束检查、机械排序及责任/审批披露；最终选择仍需用户确认。 |
 | `finalize` | `--comparison`、`--selection`、`--contract`、`--evidence`、`-o` | 按明确选择重新计算完整成果，写入输入快照和 `final-run.json`，不覆盖旧运行。 |
 | `verify-final-run` | 最终运行目录 | 检查选择、合同、参数、证据、软件身份与完整成果文件的绑定。 |
@@ -81,7 +81,7 @@ wwtp-fin schema --kind scheme-set
 
 ## 确定性承诺
 
-- 同一输入不依赖系统当前日期；`evaluation_date` 可缺省，未给 `base_calendar_year` 时只输出相对期间；显式 `base_calendar_year` 仅作展示轴，不成为评价日或政策证据日期，日期相关裁决保持未决。
+- 同一输入不依赖系统当前日期；`evaluation_date` 可缺省，未给 `base_calendar_year` 时只输出相对期间；显式 `base_calendar_year` 是项目开始年（有建设期为建设开始年，无建设期为运营开始年），仅作展示轴，不成为评价日或政策证据日期，日期相关裁决保持未决。
 - `document.json` 保留完整机器语义；`report.md` 只确定性投影财务计算、分析、裁决和待补数据，不冒充完整项目咨询报告。
 - 凡参与财务裁决或会改变用户决策的计算主题，`report.md` 必须给出数值、口径和解释；纯中间序列、模型自检计数和审计结果只保留在 `result.json`、`document.json` 与技术表中。
 - `quality.json.checks.financial_narrative_complete` 同时检查计算主题分析与裁决指标覆盖；缺任一项时 `build` 以质量门禁失败结束。
