@@ -70,11 +70,19 @@ wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml -
 
 `combinations[]` 每条包含至少两个 `candidate_ids`、`result_candidate_id`、`basis` 与非空 `evidence_refs`。可以组合时，`result_candidate_id` 指向另一条已完整计算的候选；无法组合时为 `null`，说明工程、资源或合同上的互斥理由。登记本身不证明完整组合的参数构造正确，Agent 仍须检查相互作用。不得把独立节约额相加作为组合结果。
 
+组合替代原措施时，使用可选 `replaced_candidate_ids` 显式列出被替代的单项候选 ID。例如已有工程措施加银行贷款，再改用专项债，组合成员可以引用旧完整方案和专项债候选，但必须移除旧银行贷款单项。CLI 递归展开有效措施，拒绝循环谱系、同一结果相互矛盾的定义，以及仍包含已声明互斥措施的组合。替代项只能来自该组合继承的单项，不能随意删除无关候选。
+
+CLI 自动检查所有已测情景赢家与剩余已研究单项的组合处置，输出 `combination_coverage`：已包含（`already_included`）、已有实际组合（`tested_combination`）、有依据排除（`excluded`）或尚未处理（`missing`）。缺失项会阻止进入选择，不能用“已有很多组合”或一句停止理由绕过。实际组合须具有准确的有效措施集合且改变参数；附带另一项措施的超集不能代替这项组合，换 ID 复制原参数也不能充数。已声明单项互斥可继承到包含它的完整方案，已被替代掉的措施不参与继承。选择非赢家时，`finalize` 对该候选执行同样检查。
+
+这项检查只针对当前已有措施与优选候选，不枚举全部子集，也不声称发现了所有外部政策。CLI 验证声明的组合谱系、引用和实际计算，不能验证工程合并或排除理由的事实真伪。新组合改变赢家后，需要继续处置新赢家剩余的措施；未落实的真实实施条件仍保留为条件，不能为收口伪造互斥。
+
+只有在全部已测情景均没有参数差异时，原基准才不作为新增措施。某措施或组合只在不利情景生效，也要保留并接受组合覆盖检查。省略自动基准、另建可按情景重新推导的基准候选时，可设置 `research.baseline_candidate_id`；该候选在基准情景的完整参数必须与比较基准一致，CLI会以它各情景的参数识别基准，不按名称猜测。
+
 `stopping_reason` 解释为什么当前研究足以支持建议、尚未覆盖的边界和重新研究的触发条件。数值全绿、菜单已经生成、候选数量够多或用户已选一项，都不是研究完成的理由。记录很少也可以充分；记录很多仍可能遗漏一个决定性的事实或方案。
 
 ## `research_review` 输出与使用
 
-比较文件中的 `research_review` 提供 `status`、`ready_for_selection`、`issues`、`scenario_results`、`baseline_winners`、`robust_winners`、`recommended_candidates`、`assumption_tests`、目标与研究哈希。各情景的 `winners` 可以包含多个并列候选；`robust_winners` 为所有已测情景赢家集合的交集。
+比较文件中的 `research_review` 提供 `status`、`ready_for_selection`、`issues`、`scenario_results`、`baseline_winners`、`robust_winners`、`recommended_candidates`、`assumption_tests`、`combination_coverage`、目标与研究哈希。各情景的 `winners` 可以包含多个并列候选；`robust_winners` 为所有已测情景赢家集合的交集。
 
 | 状态 | 含义及后续动作 |
 |---|---|

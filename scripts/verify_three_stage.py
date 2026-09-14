@@ -55,10 +55,11 @@ def main():
         for direction in research["directions"]:
             if direction["status"] == "evaluated":
                 direction.update(candidate_ids=ids, paths=paths)
-        research["combinations"] = ([{
-            "candidate_ids": ids, "result_candidate_id": None,
+        research["combinations"] = [{
+            "candidate_ids": [left, right], "result_candidate_id": None,
             "basis": "合成任务比较互斥的完整报价/筹资安排，不相加两份报价。",
-            "evidence_refs": ["synthetic://exclusive-fixtures"]}] if len(ids) > 1 else [])
+            "evidence_refs": ["synthetic://exclusive-fixtures"]}
+            for index, left in enumerate(ids) for right in ids[index + 1:]]
         volumes = deepcopy(parameters["vol_segments"])
         for item in volumes:
             item["m3d"] *= .9

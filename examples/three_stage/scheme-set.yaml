@@ -150,4 +150,18 @@ research:
     basis: 同一服务只采用一种报价，两个报价互斥，不能相加。
     evidence_refs:
     - synthetic://exclusive-prices
+  - candidate_ids:
+    - cash_gap
+    - conditional
+    result_candidate_id: null
+    basis: 同一服务的单价候选互斥；低价资金缺口反例不能作为可叠加降本措施。
+    evidence_refs:
+    - synthetic://exclusive-prices
+  - candidate_ids:
+    - cash_gap
+    - complete
+    result_candidate_id: null
+    basis: 同一服务的单价候选互斥；低价资金缺口反例不能作为可叠加降本措施。
+    evidence_refs:
+    - synthetic://exclusive-prices
   stopping_reason: 任务范围内报价候选及共同水量下界已逐一测算；工程税务等合成边界固定，只验证研究绑定，不证明现实项目最优。
