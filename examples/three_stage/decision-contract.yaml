@@ -1,0 +1,26 @@
+schema: wwtp-fin/decision-contract/1
+id: synthetic-decision
+revision: '1'
+objective:
+  metric: tariff_blended_gross
+  direction: min
+  basis: 合成示例：固定投资、服务量和补助，仅比较可实现的单价方案；不代表现实项目报价。
+comparison_basis:
+  perspective: 服务付费方
+  unit: 元/m³
+  scope: 固定其他费用下的服务单价比较
+  period: 与来源基准相同的运营期
+  discount_basis: 单价目标不折现；财务评价沿用基准声明
+hard_constraints:
+- metric: cum_cash_min
+  op: '>='
+  value: 0
+  basis: 期间资金必须闭合
+fixed_parameters:
+  concession_years: 25
+  design_capacity_m3d: 30000
+  discount_rate: 0.06
+required_conditions:
+- id: implementation
+  description: 实施依据和估算边界
+  responsible_party: 合成验收方

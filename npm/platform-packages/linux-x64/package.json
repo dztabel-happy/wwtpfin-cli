@@ -1,12 +1,21 @@
 {
   "name": "@dztabel/wwtpfin-linux-x64",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Linux x64 binary for wwtp-fin.",
   "license": "UNLICENSED",
-  "publishConfig": { "access": "public" },
-  "os": ["linux"],
-  "cpu": ["x64"],
-  "files": ["wwtp-fin", "_internal"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "wwtp-fin",
+    "_internal"
+  ],
   "scripts": {
     "prepack": "node -e \"const fs=require('fs'); if(!fs.existsSync('wwtp-fin')||!fs.existsSync('_internal')){console.error('wwtpfin platform package missing wwtp-fin or _internal'); process.exit(1)}\""
   }

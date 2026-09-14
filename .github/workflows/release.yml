@@ -93,6 +93,7 @@ jobs:
           "dist/wwtp-fin/${{ matrix.binary }}" --version
           "dist/wwtp-fin/${{ matrix.binary }}" build -p wrapper/examples/showcase/project.yaml --evidence wrapper/examples/showcase/evidence.json -o build/release-smoke
           "dist/wwtp-fin/${{ matrix.binary }}" verify-deliverable build/release-smoke
+          python wrapper/scripts/verify_three_stage.py --cli "dist/wwtp-fin/${{ matrix.binary }}" --assets wrapper --output build/three-stage-binary
       - name: Prepare npm platform package
         run: python wrapper/scripts/prepare_platform_package.py --platform "${{ matrix.platform }}" --bundle-dir dist/wwtp-fin
       - name: Packed install smoke test
@@ -109,6 +110,9 @@ jobs:
           "$install_dir/node_modules/.bin/wwtp-fin" schema --kind input >/dev/null
           "$install_dir/node_modules/.bin/wwtp-fin" build -p wrapper/examples/showcase/project.yaml --evidence wrapper/examples/showcase/evidence.json -o "$install_dir/deliverable"
           "$install_dir/node_modules/.bin/wwtp-fin" verify-deliverable "$install_dir/deliverable"
+          installed_cli="$install_dir/node_modules/.bin/wwtp-fin"
+          if [ "${{ matrix.platform }}" = "win32-x64" ]; then installed_cli="$installed_cli.cmd"; fi
+          python wrapper/scripts/verify_three_stage.py --cli "$installed_cli" --assets "$install_dir/node_modules/@dztabel/wwtpfin" --output "$install_dir/three-stage"
       - name: Publish platform package
         if: inputs.publish == 'true'
         shell: bash

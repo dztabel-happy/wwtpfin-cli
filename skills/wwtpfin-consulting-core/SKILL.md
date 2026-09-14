@@ -10,27 +10,60 @@ description: >-
 
 Use this CLI when the task needs deterministic wastewater-project financial calculation, checks, evidence-aware findings, structured report content, tables, or figure briefs. Do not use it to write an unconstrained narrative, make a Word file, draw a chart, infer missing facts, or replace an engineering/design study.
 
+## Project workspace
+
+The user supplies materials, not folders. Before conversion, create or reuse one case directory and place files according to [workspace management](references/workspace.md). Copy source files into `sources/`; never move, rename, edit, or delete the user's originals.
+
+Use the same-version package skill assets; a machine-global copy may be stale even when the skill name matches.
+
+Maintain one editable input set under `input/`. Every accepted input revision gets a numbered run containing an input snapshot and the CLI deliverable. A run becomes immutable after quality and deliverable verification pass. Downstream exports must be bound to the exact verified run that produced them.
+
 ## Workflow
 
-1. Read `wwtp-fin --help`, the current input and evidence schemas, `docs/INTAKE.md`, and `examples/minimal_complete/`.
-2. Convert source materials into one parameter file, one evidence file, and a conversion log. Preserve source wording, locator, date and evidence state. Unknown, ambiguous, or missing information goes to `unresolved`, `required_user_inputs`, or `declared_basis`; never invent a value.
-3. Build, then inspect every `warnings.json` item and `quality.json` before claiming a result.
-4. Verify the completed package. Read `document.json` / `report.md`, `result.json`, checks, decisions, tables and figure briefs together; never promote a warning, missing input, or unverified benchmark into a conclusion.
-5. Convert `document.json` to DocxKit's `report.json`, then hand off report semantics and tables; hand off `figures/*.json` briefs and matching `figures/data/*.csv` to ChartKit. See [handoff](references/handoff.md).
+Resolve the tool's asset root before reading `docs/` or `examples/`: use the source repository when working there, otherwise locate `@dztabel/wwtpfin` under `npm root -g` (or the active local npm installation). These paths are relative to that asset root, not the case directory. Compare its `package.json` version with `wwtp-fin --version`; update mismatched CLI and skill assets before using new commands. The installed CLI schemas remain authoritative.
+
+1. Create or resume the case workspace. Copy the supplied Word, Excel, PDF and other source files into `sources/` while preserving their names.
+2. Read `wwtp-fin --help`, the current input and evidence schemas, `docs/INTAKE.md`, and `examples/minimal_complete/`.
+3. Convert `sources/` into `input/project-draft.yaml`, `input/evidence.json`, and `input/conversion-log.md`. Preserve source wording, locator, date and evidence state. Complete the source-to-field ledger, conflict ledger and conversion-completeness matrix before continuing.
+4. Run `wwtp-fin intake -p input/project-draft.yaml -o input/intake-advice.json` after recording the disposition of material source items. Keep conflicting facts unresolved. Missing workbooks do not prevent authorized, source-backed estimates or conditional scenarios: record the method, source, uncertainty and intended use; do not represent an estimate as a fact. Ask one prioritized batch only for information that actually blocks useful work. Product defaults remain proposals, not evidence.
+5. Establish a calculable working baseline as `input/project.yaml`. Reproduce a source-declared baseline when the materials contain one; otherwise, within the user's research authorization, combine sourced facts, supported estimates and explicit design proposals into a conditional baseline. Preserve missing source facts in the conversion ledger and label every proposal; a complete historical source model is not a prerequisite to research. Diagnose the result before comparing changes; a baseline is not a best plan.
+6. For iteration, follow [modeling and iteration](references/modeling-iteration.md). Establish a separate decision contract, actively investigate supported measures within the user's authorized scope, calculate conditional scenarios and complete combinations, and distinguish numerical feasibility from implementation readiness. Give reasoned recommendations within the evaluated set; final choice stays with the user. If no source-backed measure exists, record `no_source_backed_candidates` and identify the evidence needed to continue.
+7. For a baseline or conditional `build`, create the next `runs/run-NNNN/`, copy its working input snapshot and build into an empty `deliverable/`. For a selected `finalize`, supply a new empty run path; that command creates its own bound snapshot.
+8. Inspect every `warnings.json` item and `quality.json`, then run `verify-deliverable`. Read `document.json` / `report.md`, `result.json`, checks, decisions, tables and figure briefs together; never promote a warning, missing input, or unverified benchmark into a conclusion.
+9. After an explicit scheme choice, distinguish selection of conditional research assumptions from implementation-condition readiness using `selection_scope`; preserve pending conditions in a conditional study. Use `finalize` to generate a new complete run and `verify-final-run` to validate its binding. Never select a final scheme by run number or modification time. For a standalone calculation, identify it as baseline or conditional work. Produce Word or rendered charts only when requested, using the explicitly selected verified run and [downstream handoff](references/handoff.md).
 
 ```bash
 wwtp-fin schema --kind input
 wwtp-fin schema --kind project-evidence
-wwtp-fin build -p project.yaml --evidence evidence.json -o deliverable
-wwtp-fin verify-deliverable deliverable
+wwtp-fin schema --kind scheme-set
+wwtp-fin schema --kind decision-contract
+wwtp-fin schema --kind scheme-selection
+wwtp-fin intake -p input/project-draft.yaml -o input/intake-advice.json
+wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml --evidence input/evidence.json --schemes comparisons/compare-0001/scheme-set.yaml -o comparisons/compare-0001/output
+wwtp-fin build -p runs/run-0001/input/project.yaml --evidence runs/run-0001/input/evidence.json -o runs/run-0001/deliverable
+wwtp-fin verify-deliverable runs/run-0001/deliverable
 ```
+
+## Current work and return paths
+
+For interactive cases, use package `docs/CASE_WORKFLOW.md`. Record each user request verbatim and the business response with reasons; `case checkpoint` stores the input/evidence snapshot and current artifact. At receipt of a material change, record work in progress before further research, so an old recommendation is not presented as current. At every response, resumed session and export, run `case status` and direct the user to `CURRENT.md` plus the exact artifact. Return to any earlier stage when new facts or preferences require it; preserve old rounds and selections.
+
+Record a comparison with its actual scheme-set path, not just the result JSON. Record the selected final run after verification. `current` means consistent with current inputs, not approved or optimal. A stale or in-progress state must not fall back to a historical result. Before exporting a selected scheme, use `verify-final-run RUN --case CASE`; historical file integrity alone cannot establish current validity.
 
 ## Required conversion discipline
 
-- Financing is especially strict: when unusable, state that and do not supply loan terms.
+- Preserve missing financing as unresolved in the source baseline. With authorization to explore alternatives, use explicitly proposed loan scenarios with recorded sources or estimation methods; these are not commitments, approval or confirmed terms.
+- The source-declared baseline may reproduce explicit terms and assumptions that the supplied scheme actually uses, even when their evidence state is `proposed_not_binding`. Preserve that state and say the run reproduces the source scheme; never call those terms binding, verified, recommended or optimal. Other proposals stay unresolved in the source-faithful draft, but may enter a separately identified, authorized conditional research baseline or candidate.
+- For explicit `opex_items[].annual_amounts_wan`, do not invent formula-only `base_wan`, `scales_with_volume` or `annual_growth_rate`. `price_adj_group` is required only when tariff adjustment is active; `vat_scope` is required only when by-product revenue exists.
+- A spreadsheet formula is usable only after its references, cached result, units and labels agree. Record any contradiction as unresolved; never infer financing terms from schedule shape.
+- Conversion is incomplete until calculation fields and source material on risk allocation, performance supervision, termination and transfer are each mapped, unresolved or explicitly not applicable.
+- Never invent project facts or derive tax eligibility from a favorable result. Distinguish fact, design choice, estimate, negotiation proposal and missing information. Supported assumptions may be calculated within an authorized exploration; final decisions must disclose their conditions. A product default is a labeled proposal, not a fact.
+- `intake.ready=false` describes the current draft, not a ban on designing research scenarios. For example, an unset service price may be a variable to solve, and an undecided financing arrangement may be a proposal to compare. Explain the proposed objective, bounds and assumptions; do not require an existing priced financial workbook before iterating. If the requested scope truly cannot be represented, record the specific missing capability. External scripts may convert engineering quantities into inputs and independently cross-check results; they must not replace the CLI financial calculation or be presented as its completed workflow.
 - Do not elevate evidence state, turn a table into prose, serialize raw JSON into the report, or use a shared rule catalog as project evidence.
 - Record full material qualifications in `declared_basis`; retain declared totals and targets in `declared_scalars`.
 - Keep pre-tax, after-tax and target bases distinct. A financial benchmark must record its source, date, provider and evidence state.
+- Handle `profit_distribution_policy` as one group. If a source policy or user choice is truly required, ask once; within authorized research, propose and explain a legally supportable allocation scenario. Never use 0 or 100% merely to fill a missing fact; an explicit research proposal at either endpoint must state its purpose and consequences, without claiming a company resolution.
+- When a binding source gives cumulative water thresholds and tariff multipliers, map them to `revenue.marginal_volume_tiers`; the last tier has `up_to_m3d: null`. In source reproduction, proposed clauses enter only if the source actually applies them. Authorized alternative clauses may enter separately labelled conditional candidates with explicit thresholds, rationale and conditions; never call them existing contract terms.
 - Review `D7-*` warnings individually. A successful exit code does not erase a warning.
 
 Read [conversion discipline](references/conversion-discipline.md) before material conversion.
@@ -40,6 +73,11 @@ Read [conversion discipline](references/conversion-discipline.md) before materia
 - `quality.json`: whether the completed content package passed its quality gate.
 - `warnings.json`: input-shape information requiring correction, an explicit limitation, or an unresolved registration.
 - `result.json`: calculation, checks, analysis, decisions, evidence and downstream data.
-- `document.json`: authoritative report semantics; `report.md` is its deterministic projection.
+- `document.json`: complete authoritative machine semantics for downstream selection.
+- `report.md`: deterministic financial consulting core only: calculation basis, key metrics, financial analysis, decisions, risks and required inputs. It is not a complete project report.
 
-For command exit meanings and output contract, use `docs/contract-surface.md`. For current implementation limits, use `docs/boundary.md`; do not present unimplemented probability analysis, new operating-period long-term debt, mixed-use VAT adjustment, generic scenario groups, or a complete statutory VfM study as available.
+## Final response
+
+State the selected run number, result summary, and output paths. List every remaining input warning and material unresolved limitation, even when build, quality, charts, and Word QA pass. Never let “build passed” imply that project evidence or input assumptions are complete.
+
+For command exit meanings and output contract, use `docs/contract-surface.md`. For current implementation limits, use `docs/boundary.md`; do not present probability/Monte Carlo analysis or a complete statutory VfM study as available. Operating-period debt is limited to loans bound to same-year capital assets; mixed-use long-term-asset VAT requires an explicit tax-workpaper schedule.

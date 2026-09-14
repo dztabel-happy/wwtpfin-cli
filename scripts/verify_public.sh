@@ -15,13 +15,13 @@ PAYLOAD=(
   npm/platform-packages/darwin-arm64/package.json
   npm/platform-packages/linux-x64/package.json
   npm/platform-packages/win32-x64/package.json
-  skills examples docs README.md README.zh-CN.md
+  skills examples docs README.md README.zh-CN.md DOMAIN_CONTRACT.md CHANGELOG.md
 )
 if grep -R -n -E 'src/wwtpfin|wushuichuli|caseadapters|benchmarks-work' "${PAYLOAD[@]}" 2>/dev/null; then
   echo "发现核心源码或私有路径引用" >&2
   exit 1
 fi
-if grep -R -n -E '亳州|滨江|霍邱|太湖|天门山|下浮' "${PAYLOAD[@]}" 2>/dev/null; then
+if grep -R -n -E -i 'huoqiu|taihu|tianmenshan|bozhou|binjiang|zhujiaqiao|亳州|滨江|霍邱|太湖|天门山|朱家桥' "${PAYLOAD[@]}" 2>/dev/null; then
   echo "发现案例专属词" >&2
   exit 1
 fi
@@ -64,6 +64,7 @@ test "$(grep -Fc 'ref: ${{ needs.resolve-core-ref.outputs.core_sha }}' .github/w
 grep -q 'core_sha=$(git rev-parse HEAD)' .github/workflows/release.yml
 
 if [ -n "$CORE_REPO" ]; then
+  python3 "$CORE_REPO/scripts/sync_public_assets.py" "$ROOT" --check
   core_version="$(python3 -c 'import re,sys; text=open(sys.argv[1], encoding="utf-8").read(); match=re.search(r"(?ms)^\[project\].*?^version\s*=\s*\"([^\"]+)\"", text); print(match.group(1) if match else "")' "$CORE_REPO/pyproject.toml")"
   public_version="$(node -p "require('./package.json').version")"
   if [ "$core_version" != "$public_version" ]; then
@@ -72,5 +73,12 @@ if [ -n "$CORE_REPO" ]; then
   fi
 fi
 
-npm pack --dry-run >/dev/null 2>&1
+npm pack --dry-run --json | node -e '
+let input = "";
+process.stdin.on("data", chunk => input += chunk);
+process.stdin.on("end", () => {
+  const files = JSON.parse(input).flatMap(pack => pack.files.map(file => file.path));
+  const unexpected = files.filter(path => /(^|\/)__pycache__(\/|$)|\.py[co]$/.test(path));
+  if (unexpected.length) throw new Error("Python cache files in npm package: " + unexpected.join(", "));
+});'
 echo "public package verification passed"
