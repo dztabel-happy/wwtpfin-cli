@@ -63,6 +63,33 @@ def main():
     run("finalize", "--comparison", comparison, "--selection", selection,
         "--contract", contract, "--evidence", evidence, "-o", final, expect=1)
 
+    # Selecting conditional assumptions preserves pending implementation facts.
+    research_selection = out / "research-selection.json"
+    research_command = [sys.executable, str(helper), str(comparison), "conditional",
+        str(research_selection), "--confirmed-by", "synthetic acceptance",
+        "--confirmed-at", "2026-09-14", "--reference", "synthetic://conditional-assumptions",
+        "--purpose", "workflow_validation"]
+    assert subprocess.run(research_command, capture_output=True).returncode == 2
+    assert not research_selection.exists()
+    subprocess.run(research_command + ["--selection-scope", "conditional_research"],
+                   check=True, capture_output=True)
+    research_final = out / "research-final"
+    run("finalize", "--comparison", comparison, "--selection", research_selection,
+        "--contract", contract, "--evidence", evidence, "-o", research_final)
+    run("verify-final-run", research_final)
+    research = json.loads((research_final / "deliverable/result.json").read_text(encoding="utf-8"))
+    assert research["params"] == rows["conditional"]["resolved_params"]
+    assert research["selected_scheme"]["conditions"] == rows["conditional"]["conditions"]
+    assert any(c["status"] == "pending" for c in research["selected_scheme"]["conditions"])
+    research_report = (research_final / "deliverable/report.md").read_text(encoding="utf-8")
+    assert "条件研究选定成果" in research_report
+    assert "模拟流程验收成果，不代表真实甲方确认" in research_report
+    failed_research = research_command.copy()
+    failed_research[3] = "cash_gap"
+    failed_research[4] = str(out / "failed-research-selection.json")
+    assert subprocess.run(failed_research + ["--selection-scope", "conditional_research"],
+                          capture_output=True).returncode == 2
+
     def save(name, value):
         path = out / name
         path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -305,7 +332,7 @@ def main():
     pending = json.loads(run("case", "status", case))
     assert pending["state"] == "in_progress" and pending["current_artifact"] is None
     assert (case / "CURRENT.md").is_file()
-    print("three-stage installed acceptance passed: constraints, conditions, selection, full run, "
+    print("three-stage installed acceptance passed: constraints, conditions, explicit conditional research selection, full run, "
           "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
           "operating capex classification, cash gaps, cash/book bridge, cash solve, selected constraints "
           "refund accounting/tax separation fractional-time selected full run, current-case invalidation and historical preservation")

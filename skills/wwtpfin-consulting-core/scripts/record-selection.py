@@ -24,10 +24,14 @@ def main():
     parser.add_argument("--reference", required=True)
     parser.add_argument("--purpose", required=True,
                         choices=("selected_scheme", "workflow_validation"))
+    parser.add_argument("--selection-scope", choices=("implementation", "conditional_research"),
+                        help="scope explicitly confirmed by the user; omission requires implementation conditions")
     args = parser.parse_args()
     comparison = json.loads(args.comparison.read_text(encoding="utf-8"))
-    if args.candidate_id not in comparison.get("selectable_shortlist", []):
-        parser.error("candidate is not eligible for selection; continue iteration or resolve conditions")
+    shortlist = ("research_selectable_shortlist" if args.selection_scope == "conditional_research"
+                 else "selectable_shortlist")
+    if args.candidate_id not in comparison.get(shortlist, []):
+        parser.error("candidate is not eligible for the confirmed selection scope; continue iteration or resolve conditions")
     candidate = next(row for row in comparison["candidates"] if row["id"] == args.candidate_id)
     if digest(candidate["resolved_params"]) != candidate["resolved_params_sha256"]:
         parser.error("candidate parameter hash mismatch")
@@ -39,6 +43,8 @@ def main():
         "comparison_sha256": digest(comparison),
         "resolved_params_sha256": candidate["resolved_params_sha256"],
     }
+    if args.selection_scope is not None:
+        selection["selection_scope"] = args.selection_scope
     # Exclusive creation preserves existing confirmation records.
     with args.output.open("x", encoding="utf-8") as stream:
         json.dump(selection, stream, ensure_ascii=False, indent=2)

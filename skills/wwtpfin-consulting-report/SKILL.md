@@ -13,7 +13,7 @@ Turn the verified semantic package and user materials into a complete consulting
 
 ## Preconditions
 
-1. Select the explicitly confirmed final `run-NNNN`; require `wwtp-fin verify-final-run`, passing `quality.json` and `wwtp-fin verify-deliverable` now. A baseline or conditional report may use an exact run explicitly identified for that purpose; never silently substitute the newest trial. Retain `workflow_validation` labels for synthetic acceptance.
+1. Select the explicitly confirmed final `run-NNNN`; require `wwtp-fin verify-final-run`, passing `quality.json` and `wwtp-fin verify-deliverable` now. A baseline or conditional report may use an exact run explicitly identified for that purpose; never silently substitute the newest trial. Retain `workflow_validation` labels for synthetic acceptance. If `selection_scope=conditional_research`, label the manuscript as a selected conditional study and carry forward the pending implementation conditions and fallback; never present it as implementation-ready or approved. Read `document.json.selection_context` as well as the selected run record.
 2. Bind all work to `exports/run-NNNN/report/`. The plan initializer records deliverable, parameter and selection hashes; the checker rejects changed source content. Never mix runs.
 3. Read the user goal and all supplied source materials before deciding the report structure. Default to a source-backed draft: include supported modules, omit unsupported modules from the manuscript, and keep their requests in the routing ledger and one consolidated data-request section.
 
