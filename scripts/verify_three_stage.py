@@ -55,10 +55,16 @@ def main():
         for direction in research["directions"]:
             if direction["status"] == "evaluated":
                 direction.update(candidate_ids=ids, paths=paths)
+            elif "exclusion" in direction:
+                direction["exclusion"]["scope_candidate_ids"] = (
+                    (["base"] if spec.get("include_base", True) else []) + ids)
         research["combinations"] = [{
             "candidate_ids": [left, right], "result_candidate_id": None,
             "basis": "合成任务比较互斥的完整报价/筹资安排，不相加两份报价。",
-            "evidence_refs": ["synthetic://exclusive-fixtures"]}
+            "evidence_refs": ["synthetic://exclusive-fixtures"],
+            "exclusion": {"kind": "source_rule", "scope_candidate_ids": [left, right],
+                          "applicability": "本脚本协议只比较择一采用的完整安排，不是独立措施库。",
+                          "exceptions": "协议例外要求真实项目独立措施另行组合；本次仅为合成脚本验收。"}}
             for index, left in enumerate(ids) for right in ids[index + 1:]]
         volumes = deepcopy(parameters["vol_segments"])
         for item in volumes:
@@ -298,15 +304,19 @@ def main():
     fractional_spec = deepcopy(data["scheme_set"])
     complete = deepcopy(next(c for c in fractional_spec["candidates"] if c["id"] == "complete"))
     complete["overrides"] = {}
-    fractional_spec.update(include_base=False, candidates=[complete])
+    alternative = deepcopy(complete)
+    alternative.update(id="higher_quote", name="非整年期另一完整报价",
+                       overrides={"tariff_blended_gross": trial["tariff_blended_gross"] + .1})
+    fractional_spec.update(include_base=False, candidates=[complete, alternative])
     attach_synthetic_research(fractional_spec, trial)
+    fractional_spec["research"]["baseline_candidate_id"] = "complete"
     run("compare", "-p", save("fractional-project.json", trial),
         "--contract", save("fractional-contract.json", fractional_contract),
         "--schemes", save("fractional-schemes.json", fractional_spec), "--evidence", evidence,
         "-o", out / "fractional-comparison")
     fractional_comparison = out / "fractional-comparison/scheme-comparison.json"
     compared = json.loads(fractional_comparison.read_text(encoding="utf-8"))
-    assert compared["selectable_shortlist"] == ["complete"]
+    assert compared["selectable_shortlist"] == ["complete", "higher_quote"]
     subprocess.run([sys.executable, str(helper), str(fractional_comparison), "complete",
         str(out / "fractional-selection.json"), "--confirmed-by", "synthetic acceptance",
         "--confirmed-at", "2026-09-12", "--reference", "synthetic://half-year-periods",

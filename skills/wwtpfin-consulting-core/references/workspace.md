@@ -64,7 +64,8 @@ Do not select by directory modification time, a `latest` symlink or the highest 
 
 ## Export binding
 
-- Put downstream work under `exports/run-NNNN/`, using the exact selected run number.
+- Put downstream work under `exports/run-NNNN/`, using the exact selected run number. This includes presentation-only explanations, one-page summaries, export scripts and their temporary files; a `scripts/` sibling of the report directory is suitable. After `finalize`, do not add them to `input/workpapers/` or a verified run. The current input tree is bound as a whole, so even an added non-calculation script can make the selected result stale.
+- If newly created export-only files were accidentally put in `input/`, move those files to the export directory and restore the original bound input tree, then rerun currentness verification. Do not hide real evidence or parameter changes, weaken the hash check or repeat financial calculations solely to legitimize a misplaced rendering script. Genuine calculation or recommendation changes return to research and create a new bound result.
 - Never mix tables, figures, report semantics, or conclusions from different runs.
 - Rebuilding after an input change creates a new run and a new export directory; old runs and exports remain unchanged.
 

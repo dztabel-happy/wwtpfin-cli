@@ -69,6 +69,14 @@ research:
     basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
     evidence_refs:
     - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: &id001
+      - cash_gap
+      - conditional
+      - complete
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
   - id: capital_and_renewal
     domain: capital_and_renewal
     status: not_applicable
@@ -77,6 +85,11 @@ research:
     basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
     evidence_refs:
     - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
   - id: operations
     domain: operations
     status: not_applicable
@@ -85,6 +98,11 @@ research:
     basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
     evidence_refs:
     - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
   - id: tax_and_support
     domain: tax_and_support
     status: not_applicable
@@ -93,6 +111,11 @@ research:
     basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
     evidence_refs:
     - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
   - id: financing_and_payment
     domain: financing_and_payment
     status: evaluated
@@ -113,6 +136,11 @@ research:
     basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
     evidence_refs:
     - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
   assumptions:
   - id: volume
     paths:
@@ -143,25 +171,40 @@ research:
         year_to: 25
         m3d: 25650
   combinations:
-  - candidate_ids:
+  - candidate_ids: &id002
     - conditional
     - complete
     result_candidate_id: null
     basis: 同一服务只采用一种报价，两个报价互斥，不能相加。
     evidence_refs:
     - synthetic://exclusive-prices
-  - candidate_ids:
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id002
+      applicability: 相同服务只采用一个完整报价，不能同时签订两个互斥报价。
+      exceptions: 独立措施可以组合；本次成员只是互斥报价，不属于该例外。
+  - candidate_ids: &id003
     - cash_gap
     - conditional
     result_candidate_id: null
     basis: 同一服务的单价候选互斥；低价资金缺口反例不能作为可叠加降本措施。
     evidence_refs:
     - synthetic://exclusive-prices
-  - candidate_ids:
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id003
+      applicability: 相同服务只采用一个完整报价，不能同时签订两个互斥报价。
+      exceptions: 独立措施可以组合；本次成员只是互斥报价，不属于该例外。
+  - candidate_ids: &id004
     - cash_gap
     - complete
     result_candidate_id: null
     basis: 同一服务的单价候选互斥；低价资金缺口反例不能作为可叠加降本措施。
     evidence_refs:
     - synthetic://exclusive-prices
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id004
+      applicability: 相同服务只采用一个完整报价，不能同时签订两个互斥报价。
+      exceptions: 独立措施可以组合；本次成员只是互斥报价，不属于该例外。
   stopping_reason: 任务范围内报价候选及共同水量下界已逐一测算；工程税务等合成边界固定，只验证研究绑定，不证明现实项目最优。

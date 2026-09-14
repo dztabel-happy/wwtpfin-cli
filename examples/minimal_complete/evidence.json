@@ -10,12 +10,23 @@
       "provided_by": "示例数据",
       "table_role": "historical_flow",
       "table_unit": "m³/d",
-      "topic_ids": ["water.history"],
+      "topic_ids": [
+        "water.history"
+      ],
       "value": {
-        "columns": ["年份", "日均水量m3d"],
+        "columns": [
+          "年份",
+          "日均水量m3d"
+        ],
         "rows": [
-          [2024, 18000],
-          [2025, 21000]
+          [
+            2024,
+            18000
+          ],
+          [
+            2025,
+            21000
+          ]
         ]
       }
     },
@@ -27,14 +38,85 @@
       "provided_by": "示例数据",
       "table_role": "historical_opex_items",
       "table_unit": "万元",
-      "topic_ids": ["opex.history"],
+      "topic_ids": [
+        "opex.history"
+      ],
       "value": {
-        "columns": ["科目", "金额万元"],
+        "columns": [
+          "科目",
+          "金额万元"
+        ],
         "rows": [
-          ["电费", 420],
-          ["药剂费", 95],
-          ["人工成本", 260]
+          [
+            "电费",
+            420
+          ],
+          [
+            "药剂费",
+            95
+          ],
+          [
+            "人工成本",
+            260
+          ]
         ]
+      }
+    },
+    {
+      "evidence_id": "synthetic://fixed-scope",
+      "label": "合成任务范围",
+      "source": "synthetic://test-scope/full-text",
+      "as_of": "2026-09-15",
+      "provided_by": "合成验收定义",
+      "evidence_state": "source_reported_not_audited",
+      "value": {
+        "type": "source_snapshot",
+        "text": "本合成验收只比较同一服务边界内的既定报价或运行费用方案，其他服务、工程、税务和合同范围固定。此限定只适用于合成测试，不是实际项目研究授权或政策。",
+        "sha256": "8a24a3f59165032f89ea0dcf7f32381fdaf564d6480058cad3b6c55f35092df9",
+        "citation": {
+          "start": 0,
+          "end": 72,
+          "text": "本合成验收只比较同一服务边界内的既定报价或运行费用方案，其他服务、工程、税务和合同范围固定。此限定只适用于合成测试，不是实际项目研究授权或政策。",
+          "locator": "合成范围定义全文"
+        }
+      }
+    },
+    {
+      "evidence_id": "synthetic://exclusive-prices",
+      "label": "合成互斥报价规则",
+      "source": "synthetic://test-scope/full-text",
+      "as_of": "2026-09-15",
+      "provided_by": "合成验收定义",
+      "evidence_state": "source_reported_not_audited",
+      "value": {
+        "type": "source_snapshot",
+        "text": "本合成验收中的备选方案是同一服务只能择一采用的整体报价或整体工艺，不能同时采用两套完整报价或工艺。本条不排除实际项目中可独立组合的措施，也不以数值高低判定互斥。",
+        "sha256": "d1feaa3e418b6cdd9b7e417cde2b30ccbec5bbf9a0e1d3a93664fa8187288f83",
+        "citation": {
+          "start": 0,
+          "end": 80,
+          "text": "本合成验收中的备选方案是同一服务只能择一采用的整体报价或整体工艺，不能同时采用两套完整报价或工艺。本条不排除实际项目中可独立组合的措施，也不以数值高低判定互斥。",
+          "locator": "合成范围定义全文"
+        }
+      }
+    },
+    {
+      "evidence_id": "synthetic://exclusive-fixtures",
+      "label": "原生合成验收协议全文",
+      "source": "synthetic://verify-three-stage/protocol",
+      "as_of": "2026-09-15",
+      "provided_by": "合成验收定义",
+      "evidence_state": "source_reported_not_audited",
+      "value": {
+        "type": "source_snapshot",
+        "text": "原生合成工作流验收协议：verify_three_stage.py 中生成的完整报价和筹资安排均为同一任务中择一采用的完整合同包，候选之间不直接叠加。本约定仅用于合成验收；真实项目的独立措施必须另行检验组合价值，不得使用本协议排除。",
+        "sha256": "e3326899b64f4acf8beacfd2a92e47d15e3617b8763b947b517638d305cb701f",
+        "citation": {
+          "start": 0,
+          "end": 116,
+          "text": "原生合成工作流验收协议：verify_three_stage.py 中生成的完整报价和筹资安排均为同一任务中择一采用的完整合同包，候选之间不直接叠加。本约定仅用于合成验收；真实项目的独立措施必须另行检验组合价值，不得使用本协议排除。",
+          "locator": "原生合成工作流验收协议全文"
+        }
       }
     }
   ]
