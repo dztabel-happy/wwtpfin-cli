@@ -22,7 +22,7 @@ def main():
     evidence = assets / "examples/minimal_complete/evidence.json"
     contract = assets / "examples/three_stage/decision-contract.yaml"
 
-    def run(*parts, expect=0):
+    def run(*parts, expect=0, error_contains=None):
         command = [str(cli), *map(str, parts)]
         # Windows npm launchers are .cmd; execute the shipped Node wrapper directly.
         if cli.suffix == ".cmd":
@@ -33,6 +33,8 @@ def main():
         if result.returncode != expect:
             raise RuntimeError(f"{command[1]}: expected {expect}, got {result.returncode}\n"
                                + result.stdout + result.stderr)
+        if error_contains is not None:
+            assert error_contains in result.stderr, result.stderr
         return result.stdout
 
     run("compare", "-p", assets / "examples/minimal_complete/project.yaml",
@@ -94,6 +96,16 @@ def main():
         path = out / name
         path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
         return path
+
+    # A mapping must not become annual increments by iterating its numeric keys.
+    malformed = deepcopy(payload["params"])
+    malformed["tariff_escalation"] = {"2": .25}
+    malformed["calculation_basis"]["tariff_adjustment"] = "annual_increment_schedule"
+    malformed_out = out / "invalid-tariff-array"
+    run("run", "-p", save("invalid-tariff-array.json", malformed),
+        "--no-sensitivity", "--no-boundaries", "-o", malformed_out,
+        expect=1, error_contains="tariff_escalation 必须是数值数组")
+    assert not malformed_out.exists()
 
     params = deepcopy(payload["params"])
     construction = params["capital"]["construction_years"]
@@ -332,7 +344,7 @@ def main():
     pending = json.loads(run("case", "status", case))
     assert pending["state"] == "in_progress" and pending["current_artifact"] is None
     assert (case / "CURRENT.md").is_file()
-    print("three-stage installed acceptance passed: constraints, conditions, explicit conditional research selection, full run, "
+    print("three-stage installed acceptance passed: numeric-array input rejection, constraints, conditions, explicit conditional research selection, full run, "
           "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
           "operating capex classification, cash gaps, cash/book bridge, cash solve, selected constraints "
           "refund accounting/tax separation fractional-time selected full run, current-case invalidation and historical preservation")
