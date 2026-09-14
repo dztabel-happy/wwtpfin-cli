@@ -13,7 +13,7 @@ wwtp-fin schema --kind project-evidence -o schema-out
 | --- | --- | --- |
 | 项目与期间 | `project_name`、`mode`、`concession_years`、`evaluation_date`、`base_calendar_year` | 期限和模式必须明确；运营期不含建设期。日历基年是项目开始年（有建设期为建设开始年，无建设期为运营开始年），运营首年结合开始月份和建设年数推导。评价日可缺省；未给基年时只输出相对期间，显式基年仅作展示轴，不成为评价日或政策证据日期；日期相关裁决保持未决。 |
 | 声明口径 | `calculation_basis`、`declared_basis` | 前者影响计算；后者用于呈现、对照与追溯，不替代计算字段。 |
-| 建设与资产 | `capital`、`transfer_price_wan`、`terminal_value_method`、`terminal_asset_event` | 建设计划、资产、提款、IDC、费用化利息、更新资产、长期资产进项税调整与期末事件在此域闭合。 |
+| 建设与资产 | `capital`、`transfer_price_wan`、`terminal_value_method`、`terminal_asset_event` | 建设计划、资产、提款、IDC、费用化利息、更新资产、长期资产进项税调整与期末事件在此域闭合。运营流动资金回收期必须明示；`recover_operation_year: null` 表示期内不回收、期末仍占用，不自动加入资本资产组余值。 |
 | 水量与服务 | `design_capacity_m3d`、`vol_segments`、`water`、`billable_cap_*` | 需求、处理、计费、成本驱动口径分开声明。 |
 | 收入 | `tariff_*`、`revenue`、`tariff_escalation` | 收入机制、价格、调价和资金来源必须分开。 |
 | 成本 | `opex_items`、`opex_step_escalation`、`other_taxes`、`self_generation` | 每个成本项的水量关系、增长、税率和显式年度金额应如实填写。 |

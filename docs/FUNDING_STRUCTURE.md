@@ -20,6 +20,10 @@
 
 ## 运营资本支出与偿债
 
+运营流动资金使用 `capital.operating_working_capital[]`，投入时点及 `funding_source` 分别声明。`recover_operation_year` 必须显式提供：整数表示在指定运营期期末全额实际回收，须不早于投入期且位于评价期内；`null` 表示评价期内不回收。缺字段仍属未决，产品不自动填最后一期。
+
+不回收时，投入与筹资照常计入，`OWC_RECOVER` 为零，`OWC_STOCK` 和资产负债表的流动资金保留到期末；不因评价期结束或资本资产处置而转成现金。资产 `continued_use` 也不禁止另一笔有依据的实际流动资金回收，两种事件分别按声明计算。账面净值法的资本资产组余值不自动包含这部分独立流动资金，留存可能改变投资评价和真实现金指标，不能承诺收益率不变。原有整数回收期的行为保持不变。
+
 `capital.replacement_assets[]` 的 `purpose` 可为 `sustaining`（维持运营）或 `expansion`（扩建），必须同时提供 `purpose_basis`。依据应说明工程范围和用途，不能由资产名称或希望得到的指标反推。`unspecified` 保留旧输入，暂按全部扣减复算；存在借款且使用扣维持运营投资的 DSCR 时，将该状态列入 `model_limits`，阻止选定成果。
 
 采用 `ebitda_minus_tax_minus_sustaining_capex_over_pd` 时，DSCR 分子只扣维持运营投资；全部运营资本支出仍进入项目和资金现金流。专项贷款按现有 `operating_loan_tranches` 单独声明，提款、利息及还款均参与计算。分类不会改变投资额、项目收益率或累计资金；贷款会改变资金流和税息，但不证明银行承诺放款。

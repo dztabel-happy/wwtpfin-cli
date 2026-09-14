@@ -17,6 +17,8 @@
 
 `terminal_asset_event: continued_use` 表示评价期结束后资产继续使用。`TERMINAL_VALUE` 可按明示方法列评价余值；`TERMINAL_CASH_RECOVERY` 和 `terminal_cash_recovery_wan` 则为零。实际资金余额、`project_cash_cost_net` 及付款方期末支付只计真实回收；不能把账面净值另行填入 `payer_cashflow.other_cashflows` 伪装成结存返还。处置/移交使用 `disposal`，仍须说明是否实际有收付和对手方。显式运营流动资金回收计划是单独事件。
 
+`net_book_value` 的既有范围为资本资产组，包含建设/取得资产、更新资产及建设期存货；不是期末账户现金与全部流动资产的合计。独立 `operating_working_capital[]` 按其实际回收声明和期末占用单列，不自动再加入该评价余值。其 `recover_operation_year: null` 明确表示期内不回收：资金占用和流动资产仍在，回收现金为零，不因 `disposal` 经另一现金通道加回。显式期内回收仍按原安排计算，不会与评价余值重复计入。保留资金会影响相关投资评价与真实现金指标；不能把继续占用解释成已经变现。
+
 ## 指定主体收支输入
 
 `payer_cashflow` 是可选输入。省略或 `{}` 表示未建模，净支出指标为 `null`。完整对象须同时提供：
