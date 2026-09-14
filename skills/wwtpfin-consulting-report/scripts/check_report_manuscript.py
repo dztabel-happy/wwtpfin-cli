@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from report_source import PURPOSES
+from report_source import PURPOSES, configure_stdio
 
 
 MAX_TABLES = 40
@@ -115,6 +115,7 @@ def validate(path: Path, allow_placeholders: bool = False,
 
 
 def main():
+    configure_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("report", type=Path)
     parser.add_argument("--plan", type=Path)

@@ -7,7 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from report_source import PURPOSES, verify_source
+from report_source import PURPOSES, configure_stdio, verify_source
 
 
 COMMON_MODULES = (
@@ -88,6 +88,7 @@ def source_binding(deliverable: Path):
 
 
 def main():
+    configure_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("deliverable", type=Path)
     parser.add_argument("output", type=Path)

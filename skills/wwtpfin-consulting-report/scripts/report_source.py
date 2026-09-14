@@ -5,9 +5,18 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 
 PURPOSES = ("current", "historical", "baseline", "conditional_research")
+
+
+def configure_stdio():
+    """Keep Chinese diagnostics readable when Windows redirects script output."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="replace")
 
 
 def _cli(executable: str, *args: str):

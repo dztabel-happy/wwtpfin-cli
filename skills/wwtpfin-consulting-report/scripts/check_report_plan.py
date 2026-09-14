@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from init_report_plan import COMMON_MODULES, MODE_MODULES, source_binding
-from report_source import verify_source
+from report_source import configure_stdio, verify_source
 
 
 ALLOWED = {"body", "appendix", "chart_source", "workpaper_only", "audit_only",
@@ -187,6 +187,7 @@ def validate(deliverable: Path, plan_path: Path, *, cli: str = "wwtp-fin", case=
 
 
 def main():
+    configure_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("deliverable", type=Path)
     parser.add_argument("report_plan", type=Path)
