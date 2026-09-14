@@ -1,5 +1,7 @@
 # Conversion discipline
 
+These rules preserve faithful source extraction. They do not require every research proposal to have already appeared in an original financial model. Keep the source ledger intact; for authorized estimates and design choices, follow [modeling and iteration](modeling-iteration.md) and build a separately identified conditional working input. Never relabel those proposals as source facts or approved terms.
+
 ## Required conversion records
 
 Read `schema --kind input`, `schema --kind project-evidence`, `docs/INTAKE.md`, and the minimal complete example before field mapping. Build these sections in `input/conversion-log.md` before writing canonical values:
@@ -11,7 +13,7 @@ Read `schema --kind input`, `schema --kind project-evidence`, `docs/INTAKE.md`, 
 
 Keep source tables in `supporting[]` with `table_role` and `{columns, rows}`. Do not turn them into prose or detached scalars.
 
-For marginal water-volume pricing, preserve cumulative thresholds, units, multiplier basis and contractual status. A binding, source-backed rule may enter `revenue.marginal_volume_tiers`. A proposed rule may enter only a `source_declared_baseline` when the supplied scheme's own calculation demonstrably applies it; retain `proposed_not_binding` and do not present it as a contract term. Proposed alternatives not used by that calculation remain unresolved. The tiers are marginal: a higher-tier multiplier never applies retroactively to lower-tier volume.
+For marginal water-volume pricing, preserve cumulative thresholds, units, multiplier basis and contractual status. A binding, source-backed rule may enter `revenue.marginal_volume_tiers`. In source reproduction, a proposed rule enters `source_declared_baseline` only when that source actually uses it; retain `proposed_not_binding`. A separately authorized proposed pricing arrangement may enter a conditional research candidate when its thresholds, multipliers, rationale and implementation conditions are explicit. The tiers are marginal: a higher-tier multiplier never applies retroactively to lower-tier volume.
 
 ## Source authority and conflict gate
 
@@ -47,6 +49,6 @@ The adopted source scheme enters modeling as `source_declared_baseline`. It is n
 
 ## Build and handoff
 
-Map only source-backed facts. Put missing project evidence in `unresolved` or `required_user_inputs`; do not use placeholder numbers, arbitrary enum values or industry norms. Run `build`, read every `warnings.json` item, then either correct the input or record the limitation. Run `verify-deliverable` before handoff.
+Map source-backed facts at their actual evidence state. Put missing project evidence in `unresolved` or `required_user_inputs`; do not use placeholders or arbitrary enum values. An authorized conditional working input can also contain supported estimates and explicit proposals, with their method, uncertainty and intended use recorded separately. Run `build`, read every `warnings.json` item, then either correct the input or record the limitation. Run `verify-deliverable` before handoff.
 
-The CLI determines calculation and structured semantics. The agent determines only the transparent, source-backed mapping into the contract.
+The CLI determines financial calculation and structured semantics. The agent handles source interpretation, supported engineering estimates and authorized proposal design, while keeping those evidence categories distinct.
