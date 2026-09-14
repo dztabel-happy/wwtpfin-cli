@@ -30,6 +30,8 @@ Turn the verified semantic package and user materials into a complete consulting
 9. Replace figure placeholders with verified image paths, then invoke `docxkit` with the organized `report.md`. Write editable sources, diagnostics, and the final Word file under `exports/run-NNNN/report/docx/`. Render the Word file page by page with the available document renderer and inspect the cover, contents, portrait pages, landscape pages and ending. Structural QA alone is not acceptance; reject missing glyphs, broken contents, near-empty pages and unreadable table splits.
 10. Before delivery, compare the manuscript's chapter, narrative and table breadth with the benchmark ranges in `benchmark-methods.md`. Treat a large unexplained collapse as a failed report, even when DocxKit and the plan checker are green.
 
+Before drafting or delivering an interactive case report, run `wwtp-fin case status CASE` and `wwtp-fin verify-final-run RUN --case CASE` for a selected scheme. Historical verification does not prove current validity. If inputs, sources, conditions or the current comparison have changed, return to modeling/iteration; do not deliver an old selected result as current. Standalone historical or conditional reports remain possible when explicitly requested and labeled.
+
 ## Non-negotiable rules
 
 - Preserve calculated values, bases, evidence states, decision directions, warnings, and unresolved limits exactly.

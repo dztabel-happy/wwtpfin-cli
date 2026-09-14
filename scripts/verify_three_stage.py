@@ -3,6 +3,7 @@
 import argparse
 from copy import deepcopy
 import json
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -32,6 +33,7 @@ def main():
         if result.returncode != expect:
             raise RuntimeError(f"{command[1]}: expected {expect}, got {result.returncode}\n"
                                + result.stdout + result.stderr)
+        return result.stdout
 
     run("compare", "-p", assets / "examples/minimal_complete/project.yaml",
         "--evidence", evidence, "--contract", contract,
@@ -259,10 +261,54 @@ def main():
     actual_npv = sum(v / (1 + trial["discount_rate"]) ** t for v, t in
                      zip(series["CF_TIMED_TOTAL_AFTERTAX"], axis["cashflow_times_years"]))
     assert abs(fractional["scalars"]["npv_total_aftertax"] - actual_npv) < 1e-7
+    # A current case must not silently deliver a historically valid obsolete plan.
+    case = out / "current-case"
+    inputs = case / "input"
+    inputs.mkdir(parents=True)
+    current_params = deepcopy(data["base_params"])
+    save("current-case/input/project.json", current_params)
+    save("current-case/input/evidence.json", json.loads(evidence.read_text(encoding="utf-8")))
+    save("current-case/input/decision-contract.json", data["decision_contract"])
+    old_comparison = case / "comparisons/first/scheme-comparison.json"
+    old_comparison.parent.mkdir(parents=True)
+    shutil.copy2(comparison, old_comparison)
+    spec_path = save("current-case/comparisons/first/scheme-set.json", data["scheme_set"])
+    message, response = case / "user.md", case / "response.md"
+    message.write_text("请比较现有条件下的方案。", encoding="utf-8")
+    response.write_text("本轮比较及完整约束已检查；保留选择理由。", encoding="utf-8")
+    run("case", "checkpoint", case, "--stage", 2, "--message", message,
+        "--response", response, "--kind", "comparison", "--artifact", old_comparison,
+        "--schemes", spec_path)
+    assert json.loads(run("case", "status", case))["state"] == "current"
+    message.write_text("确认现有 complete 候选，请完整重算；仅为模拟验收。", encoding="utf-8")
+    response.write_text("已收到选择，绑定当前比较并开始完整重算。", encoding="utf-8")
+    run("case", "checkpoint", case, "--stage", 3, "--message", message,
+        "--response", response, "--kind", "comparison", "--artifact", old_comparison,
+        "--schemes", spec_path)
+    selected = case / "runs/selected"
+    run("finalize", "--comparison", old_comparison, "--selection", selection,
+        "--contract", inputs / "decision-contract.json", "--evidence", inputs / "evidence.json",
+        "-o", selected)
+    run("case", "checkpoint", case, "--stage", 3, "--message", message,
+        "--response", response, "--kind", "selected", "--artifact", selected)
+    run("verify-final-run", selected, "--case", case)
+    current_params["opex_items"][0]["base_wan"] *= 10
+    save("current-case/input/project.json", current_params)
+    stale = json.loads(run("case", "status", case))
+    assert stale["state"] == "needs_update" and stale["current_artifact"] is None
+    run("verify-final-run", selected)  # historical package remains intact
+    run("verify-final-run", selected, "--case", case, expect=1)
+    run("finalize", "--comparison", old_comparison, "--selection", selection,
+        "--contract", inputs / "decision-contract.json", "--evidence", inputs / "evidence.json",
+        "-o", case / "runs/stale", expect=1)
+    run("case", "checkpoint", case, "--stage", 1, "--message", message, "--response", response)
+    pending = json.loads(run("case", "status", case))
+    assert pending["state"] == "in_progress" and pending["current_artifact"] is None
+    assert (case / "CURRENT.md").is_file()
     print("three-stage installed acceptance passed: constraints, conditions, selection, full run, "
           "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
           "operating capex classification, cash gaps, cash/book bridge, cash solve, selected constraints "
-          "refund accounting/tax separation and fractional-time selected full run")
+          "refund accounting/tax separation fractional-time selected full run, current-case invalidation and historical preservation")
 
 
 if __name__ == "__main__":

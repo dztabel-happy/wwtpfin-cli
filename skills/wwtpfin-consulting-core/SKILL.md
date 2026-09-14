@@ -14,6 +14,8 @@ Use this CLI when the task needs deterministic wastewater-project financial calc
 
 The user supplies materials, not folders. Before conversion, create or reuse one case directory and place files according to [workspace management](references/workspace.md). Copy source files into `sources/`; never move, rename, edit, or delete the user's originals.
 
+Use the same-version package skill assets; a machine-global copy may be stale even when the skill name matches.
+
 Maintain one editable input set under `input/`. Every accepted input revision gets a numbered run containing an input snapshot and the CLI deliverable. A run becomes immutable after quality and deliverable verification pass. Downstream exports must be bound to the exact verified run that produced them.
 
 ## Workflow
@@ -41,6 +43,12 @@ wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml -
 wwtp-fin build -p runs/run-0001/input/project.yaml --evidence runs/run-0001/input/evidence.json -o runs/run-0001/deliverable
 wwtp-fin verify-deliverable runs/run-0001/deliverable
 ```
+
+## Current work and return paths
+
+For interactive cases, use package `docs/CASE_WORKFLOW.md`. Record each user request verbatim and the business response with reasons; `case checkpoint` stores the input/evidence snapshot and current artifact. At receipt of a material change, record work in progress before further research, so an old recommendation is not presented as current. At every response, resumed session and export, run `case status` and direct the user to `CURRENT.md` plus the exact artifact. Return to any earlier stage when new facts or preferences require it; preserve old rounds and selections.
+
+Record a comparison with its actual scheme-set path, not just the result JSON. Record the selected final run after verification. `current` means consistent with current inputs, not approved or optimal. A stale or in-progress state must not fall back to a historical result. Before exporting a selected scheme, use `verify-final-run RUN --case CASE`; historical file integrity alone cannot establish current validity.
 
 ## Required conversion discipline
 

@@ -1,6 +1,6 @@
 # Downstream handoff
 
-Run downstream tools when the user requests a rendered chart, Word report, or finished document. Select the explicitly confirmed final run according to [workspace management](workspace.md), or an exact baseline/conditional run requested for that purpose. Never use the newest trial as the final scheme. For a selected scheme require both `verify-final-run` and `verify-deliverable`; preserve `workflow_validation` labels on simulated acceptance.
+Run downstream tools when the user requests a rendered chart, Word report, or finished document. Select the explicitly confirmed final run according to [workspace management](workspace.md), or an exact baseline/conditional run requested for that purpose. Never use the newest trial as the final scheme. For a selected scheme require `case status`, `verify-final-run RUN --case CASE` and `verify-deliverable`; preserve `workflow_validation` labels on simulated acceptance.
 
 Invoke `wwtpfin-consulting-report` first. It inventories the complete run and source materials, closes the full report-module ledger, records the disposition of every semantic block, table and figure, and writes the complete report manuscript. It then uses ChartKit for selected figures and DocxKit for the final Word file. Neither downstream product recalculates financial results.
 

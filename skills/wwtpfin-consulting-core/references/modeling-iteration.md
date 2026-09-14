@@ -23,7 +23,7 @@ Sources can be policy, contract alternatives, engineering studies, quotations or
 - **Approximation or bound:** explain what the calculation can decide and what it cannot; retain pending conditions.
 - **Unrepresentable:** register the exact unsupported mechanism and affected results; do not imitate it with a different cash flow.
 
-Use `sensitivity` and `solve` to identify influential variables and boundaries. `solve` currently supports transfer consideration, blended tariff and integer operating duration; other choices use explicitly constructed scenarios. CLI does not automatically select a plan or establish a “best” scheme.
+Use `sensitivity` and `solve` to identify influential variables and boundaries. `solve` currently supports transfer consideration, blended tariff and operating duration (a month grid when time_basis is provided); other choices use explicitly constructed scenarios. CLI does not automatically select a plan or establish a “best” scheme.
 
 Do not request permission again for individual trials within already authorized exploration. Present concrete choices after calculating them. If no source-backed alternative exists, record `no_source_backed_candidates` and investigate or request the missing evidence rather than inventing a candidate.
 
@@ -47,7 +47,7 @@ Keep `decision_status=user_confirmation_required` until a choice is actually mad
 
 ```bash
 wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml --evidence input/evidence.json --schemes comparisons/compare-0001/scheme-set.yaml -o comparisons/compare-0001/output
-wwtp-fin finalize --comparison comparisons/compare-0001/output/scheme-comparison.json --selection input/selection.json --contract input/decision-contract.yaml --evidence input/evidence.json -o runs/run-NNNN
+wwtp-fin finalize --comparison comparisons/compare-0001/output/scheme-comparison.json --selection selections/selection-NNNN.json --contract input/decision-contract.yaml --evidence input/evidence.json -o runs/run-NNNN
 wwtp-fin verify-final-run runs/run-NNNN
 ```
 
