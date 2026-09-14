@@ -20,6 +20,8 @@ wwtp-fin --help
 
 ### 2. 安装 agent skill
 
+Codex 和 Claude Code 使用同一套两份 skill：[wwtpfin-consulting-core](skills/wwtpfin-consulting-core/SKILL.md) 贯穿三个阶段直至完整重算；需要正式咨询报告时，再调用 [wwtpfin-consulting-report](skills/wwtpfin-consulting-report/SKILL.md)。
+
 Codex 用户执行以下命令，将两项 skill 复制到用户技能目录。更新 CLI 后重新执行以同步 skill。
 
 ```bash

@@ -20,6 +20,8 @@ Supports macOS Apple Silicon, Linux x64 and Windows x64. This branch's three-sta
 
 ### 2. Install the agent skills
 
+Codex and Claude Code use the same two skills: [wwtpfin-consulting-core](skills/wwtpfin-consulting-core/SKILL.md) handles all three stages through complete recalculation; [wwtpfin-consulting-report](skills/wwtpfin-consulting-report/SKILL.md) compiles a formal report when requested.
+
 For Codex, copy the two bundled skills into your user skills directory. Repeat after CLI updates to keep them synchronized.
 
 ```bash
