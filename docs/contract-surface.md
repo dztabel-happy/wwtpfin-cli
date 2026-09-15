@@ -47,7 +47,7 @@ wwtp-fin schema --kind scheme-set
 
 `compare --contract ... --evidence ...` 将决策合同和证据绑定到比较。合同硬约束自动加入，不能被候选文件遗漏；目标冲突、未知指标为输入错误；固定参数被改变的候选不可行。`conditions` 用 `pending/satisfied/not_applicable` 记录实施条件，后两者必须有依据说明。
 
-新选定成果还要求 `contract.cost_goal` 与 `decision_review.passed`：明确成本视角、名义或现值、共同期间、折现率和服务/合规/回报要求。比较专用主目标为 `decision_cost_wan` 或 `decision_cost_npv_wan`，均为最小化；原始 `run` 的财务指标保持独立。这些比较指标不是 `solve` 的单项目目标字段。实际累计资金和有债务时的现金偿债覆盖自动接受必要检查。缺少目标要求仍可探索，不能由模拟确认或条件选择绕过。详见[成本契约](COST_PERSPECTIVES.md)。
+新选定成果还要求 `contract.cost_goal` 与 `decision_review.passed`：明确成本视角、名义或现值、共同期间、折现率和服务/合规/回报要求。比较专用主目标为 `decision_cost_wan` 或 `decision_cost_npv_wan`，均为最小化；原始 `run` 的财务指标保持独立。这些比较指标不是 `solve` 的单项目目标字段。真实累计资金缺口和显式合同偿债门槛阻止选择；当期经营现金不足而累计现金闭合时，`financing_review` 生成原合同或续期的资金可用性条件，允许有条件研究，不自动认定实施就绪。缺少目标要求仍可探索，不能由模拟确认或条件选择绕过。详见[成本契约](COST_PERSPECTIVES.md)。
 
 不同期限的指定主体净支出比较可使用候选 `continuation` 及方案集 `base_continuation`，每项提交完整项目参数、依据和引用；每个共同情景覆盖所有续期。最终运行增加 `cost-comparison.json`、`cost-cashflows.csv`，适用时另有完整 `continuation-deliverable/`，分别保留原合同与续期的现金流及收益率。新引用失效会阻止相应推荐或定稿；历史包继续按原绑定核验。
 
