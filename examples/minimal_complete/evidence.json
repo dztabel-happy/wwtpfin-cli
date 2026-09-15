@@ -133,6 +133,18 @@
         "base_volume_source": "examples/minimal_complete/project.yaml#vol_segments",
         "unit": "m3/day"
       }
+    },
+    {
+      "evidence_id": "synthetic://workflow",
+      "label": "合成报价决策验收任务",
+      "source": "examples/three_stage/decision-contract.yaml",
+      "as_of": "2026-01",
+      "provided_by": "product synthetic acceptance",
+      "evidence_state": "unverified",
+      "value": {
+        "type": "assumption_workpaper",
+        "method": "合成任务限定同等服务范围比较完整报价及资金可行性；不代表真实实施批准，不设真实投资人收益门槛。"
+      }
     }
   ]
 }

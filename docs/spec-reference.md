@@ -36,6 +36,8 @@ wwtp-fin schema --kind project-evidence -o schema-out
 
 ## 输出 schema
 
+研究使用独立的 `decision-contract` 与 `scheme-set` schema。新选定成果的决策合同须含 `cost_goal`，完整字段、四种成本视角、三类必要要求和不同期限续期输入见[成本契约](COST_PERSPECTIVES.md)；`research` 共同情景和 `continuation_overrides` 见[研究契约](RESEARCH_REVIEW.md)。续期是完整的另一份 `input/1` 参数，不能把 `continuation` 写进原项目参数文件。
+
 - `wwtp-fin/input-warnings/1`：根对象包含 `schema` 与 `warnings[]`；每条至少有 `id`、`path`、`message`。
 - `wwtp-fin/deliverable/1`：成果包清单，包含项目名、评价日、工件列表与 `quality_passed`。
 - `wwtp-fin/scheme-set/1`：有限候选方案、目标、硬约束、代价、责任、审批与证据定位；可内嵌 research，对全部候选执行已声明共同情景及研究检查，不触发无界自动搜索。

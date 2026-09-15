@@ -6,7 +6,7 @@ CLI 对有限候选进行确定性计算并核对已登记的研究。它不判�
 
 ## 与现有三阶段的关系
 
-第一阶段准备参数、证据和独立的决策合同；第二阶段在原有方案集增加 `research`，由 `compare` 输出 `research_review`；第三阶段在用户明确选择后，沿用 `finalize` 完整重算与历史绑定。没有新增阶段或新增 skill。资料、目标或关键假设改变时返回前阶段，当前入口与旧成果处理沿用[案例工作流](CASE_WORKFLOW.md)。
+第一阶段准备参数、证据和含 `cost_goal` 的独立决策合同；第二阶段在方案集增加 `research`，由 `compare` 输出成本目标审查 `decision_review` 和研究审查 `research_review`；第三阶段在用户明确选择后，沿用 `finalize` 完整重算与历史绑定。没有新增阶段或新增 skill。资料、目标或关键假设改变时返回前阶段，当前入口与旧成果处理沿用[案例工作流](CASE_WORKFLOW.md)。
 
 ```bash
 wwtp-fin schema --kind scheme-set
@@ -15,17 +15,21 @@ wwtp-fin schema --kind scheme-selection
 wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml --evidence input/evidence.json --schemes comparisons/compare-0001/scheme-set.yaml -o comparisons/compare-0001/output
 ```
 
-以当前安装版本导出的 schema 为字段权威。旧的无 `research` 方案集仍可试算，比较会明确显示尚未研究，不能借数值排序直接进入选定成果。
+以当前安装版本导出的 schema 为字段权威。旧的无 `research` 方案集或无 `cost_goal` 合同仍可试算，比较会明确显示尚未完成对应审查，不能借数值排序直接进入新选定成果。
 
 ## 先明确如何判断“更好”
 
 决策合同的 `objective` 是主目标，可选的 `secondary_objectives` 为至多三项有序次级目标。每项使用 `metric`、`direction`、`basis`，可选非负绝对 `tolerance`，单位与该指标一致，缺省为零。
+
+新选定成果的 `cost_goal` 必须明确真实业务目标、四种成本视角之一、共同服务期间、折现率及服务/合规/投资回报要求。名义值主目标为 `decision_cost_wan`，现值为 `decision_cost_npv_wan`，均最小化且单位为万元。自由文字不能把较窄支出改称全成本，也不能把建设运营降本偷换为财政支付下降。服务与合规关联真实实施条件；回报适用时关联实际收益率或 NPV 下限，不适用时保留依据。字段与范围见[成本契约](COST_PERSPECTIVES.md#从业务目标到机器目标)。
 
 每次比较先保留与当轮主目标最优值相差不超过其 `tolerance` 的候选，再对这一组按次级目标依次处理。最后仍可有并列。容差是有依据的无差异范围，不能改变硬约束、补救计算错误或为指定候选放宽标准。多个目标不跨口径相加，也不暗设权重；未登记的次级目标不用于自动打破并列。
 
 候选列表、CLI 摘要与每个研究情景共用这一排序算法。`ranking_groups` 按优先顺序列出并列组，`shortlist` 仅将各组展开；同组按 ID 排列是稳定展示，不构成偏好。`best_candidates` 是完整首组；旧字段 `best_by_objective` 仅在首组唯一时给出 ID，并列时为 `null`。这些字段描述本情景内的数值排序；研究情景还排除模型未闭合候选，实际推荐须继续检查共同情景与实施条件。
 
 主目标、服务边界和硬约束保持一致。降低资源投入、降低项目资金支出和改变财政支付时点可能是不同结果；若实际推荐依赖其中另一项，应在比较前说明主次与取舍并更新合同，不能算完后更换判据。
+
+完整降本比较自动要求累计资金不低于零，原合同有债务时现金 DSCR 不低于1；不得用 `conditional_research`、另列财政需求表或将门槛从方案集删掉来放行缺口。合同更严门槛继续生效。未通过候选可以保留为反例，但不参与推荐；这些计算门槛不认证银行或预算批准。
 
 ## `research` 输入
 
@@ -102,13 +106,25 @@ print(json.dumps(value, ensure_ascii=False, indent=2))
 
 ### 共同情景及工程派生
 
-`scenarios[]` 每条包含 `id`、非空 `assumption_ids`、`basis`、非空 `evidence_refs` 和非空 `overrides`；最多十二项，`baseline` 为保留 ID。情景与假设通过 `assumption_ids`、`scenario_ids` 双向引用。
+`scenarios[]` 每条包含 `id`、非空 `assumption_ids`、`basis`、非空 `evidence_refs` 和 `overrides`；最多十二项，`baseline` 为保留 ID。`overrides` 可以为空，但须由共同覆盖、工程派生或续期覆盖产生真实参数变化，不能全为空对象充数。情景与假设通过 `assumption_ids`、`scenario_ids` 双向引用。
 
 `overrides` 采用现有参数覆盖结构，在各候选参数之后应用。对象字段递归合并；候选、共同情景及派生覆盖中的数组字段（如 `opex_items`）须提供完整数组并整体替换，不支持数字键稀疏覆盖。同一情景代表对全部候选相同的外部条件或估算解释，不能让某候选偷偷恢复自己的有利取值。情景只能改变所关联假设的路径，不能修改决策合同固定参数。需要变更固定边界时，返回第一阶段修改合同并重新比较。
+
+绑定 `cost_goal` 后，共同估值率是决策的固定尺，研究情景不得通过改变 `discount_rate` 帮助某方案取得优势。融资利率可以作为有依据的条件变化；它与比较折现率不是同一个参数。确需比较另一个估值立场时，另修订合同并重新计算整组结果。
 
 工程关系需要按方案重新推导时，可以添加 `candidate_overrides`：键是候选 ID，值包含 `overrides` 与说明工程推导的 `basis`。派生变化仍须在关联假设路径内，不得改写共同冲击的同一变化路径，也不能夹带新措施。费用与数量、设备配置、时序等相互关联时，应实际重算关联字段；CLI 校验路径与计算，不验证该工程推导是否正确。
 
 情景结果保留每个候选的指标、可行性、约束、口径、模型限制和参数哈希，不能只保存赢家。某条件失效导致方案不可行是有用结果；参数错误或不完整情景无法完成计算，需要修复后才能收口。全体候选都未受实际影响的“情景”不能充当重要估算测试。
+
+### 续期也属于研究对象
+
+不同期限比较的适用视角、同等服务和完整续期要求见[成本契约](COST_PERSPECTIVES.md#同一服务期间的比较)。续期不是一个平均年费字段：它的全部参数作为虚拟路径 `continuation` 加入方向、假设、基准识别及组合差异检查；该路径不属于项目 input schema。基准没有续期时其值为 `null`，登记新增整份续期用 `paths: [continuation]`，并说明其完整安排；存在续期时可使用具体的 `continuation.<参数路径>`。不得通过宽路径隐去未说明的成本、资格或交接变化。
+
+每个共同情景的可选 `continuation_overrides` 在存在续期时须完整列出**全部带续期的候选 ID，以及有 `base_continuation` 时的 `base`**，即使自动基准不在候选列表中。每个值为 `{overrides, basis, evidence_refs}`，这里的 `overrides` 才是对该完整续期参数的覆盖；数组仍整体替换。无变化也显式写 `{}`、给出原因和真实依据。不能把 `continuation` 放进普通情景 `overrides`，也不能仅覆盖赢家而让其他续期静默固定。
+
+续期变化须在所关联假设的 `continuation` 路径内，继承共同折现尺、服务与财务门槛。除逐情景完整说明外，续期服务安排须有实际参数变化的有效条件测试，不能每轮都写空覆盖。重要假设仍须行使全部候选：例如同一长期运营估算，短方案的续期费用和长方案尚未到期的费用都应按同一解释重新推导，不能只改变有续期模型的那一组。
+
+比较同时保存 `decision_params_sha256` 与 `base_decision_params_sha256`，覆盖原合同和续期参数；各情景保留完整共同期成本及续期约束结果。续期原文、估算底稿和情景覆盖均须绑定实际 supporting 记录。一个哈希完整的续期模型仍可能包含错误估算或不成立的交接假设；CLI 不认证这些语义。
 
 ### 组合与收口
 
@@ -142,13 +158,17 @@ CLI 自动检查所有已测情景赢家与剩余已研究单项的组合处置�
 
 `recommended_candidates` 是供审查的计算候选集合，不是自动替用户决策。即使 review 为稳定，真实来源误读、遗漏重大假设或错误工程估算仍应使 Agent 返回研究。若只有原基准稳定，说明新措施没有在已测范围内证明更好；若要选择维持原方案，也须作为明确可选候选记录，不能暗选一个试算。
 
-候选原有的 `numerically_feasible`、`eligible_for_selection`、`eligible_for_research_selection` 及两个 shortlist 继续表达各自的数值、口径、模型和实施条件门禁。它们不包含完整的研究收口判断。`finalize` 另外要求 `research_review.ready_for_selection`，不能把旧的 `best_by_objective` 单点排序当作推荐证明。
+候选原有的 `numerically_feasible`、`eligible_for_selection`、`eligible_for_research_selection` 及两个 shortlist 继续表达各自的数值、口径、模型和实施条件门禁。它们不包含完整的研究收口判断。`finalize` 同时要求 `decision_review.passed`、选中候选满足对应选择范围门槛和 `research_review.ready_for_selection`，不能把旧的 `best_by_objective` 单点排序当作推荐证明。
+
+`decision_review` 核对成本目标与三类要求的真实引用，并列出候选条件、续期依据及付款方收支引用审查。条件声明为 `satisfied` 或 `not_applicable` 时不能引用不存在、重复或仅在 unresolved 的证据；付款方收支与续期也不能只填一个虚构编号。共同情景按重算后的实际付款方收支引用再次检查，不能在情景新增无依据收入绕过基准核验。坏引用的候选失去选择资格；若原推荐依赖该候选，或共同情景收支引用未通过，推荐收口会被撤回。普通估算登记为 `unverified` 和未落实条件为 `pending` 是诚实的条件研究，不等于缺失的 ID 可以通过。CLI 只确认记录可解析，不认证引用内容足以证明结论。
 
 ## 选择与成果如何保留结论边界
 
 向用户说明推荐理由、采用与不采用的影响、重要条件失效的结果以及会翻转排序的假设。不要让用户靠查看原始 JSON 才发现这些限制。可以选择条件方案，也可以基于明确取舍选择非共同赢家；选择记录保留 `decision_reason` 和 `acknowledged_research_status`，说明所作的决定，不能抹去翻转或将自选包装成稳健最优。
 
 选择仍绑定具体比较、完整参数、决策合同、证据及软件身份；第三阶段重新核验研究并全量计算。`selection_scope=conditional_research` 允许保留待落实实施条件，不允许跳过不完整研究。选定后的 Word、图表和一页说明继承同一研究边界。新证据影响选择时返回研究并生成新比较，旧判断作为历史保留。
+
+有续期的最终运行同时交付原合同和续期完整成果、共同期间 `cost-comparison.json` 及 `cost-cashflows.csv`，经 `verify-final-run` 绑定核验。回报要求、实际现金门槛和成本来源不能在续期中丢失；共同期间成本最小也不代替两个合同各自财务可行性。说明基准是原材料测算还是本次估算构成的条件基准，不能把相对后者的降幅直接称作原材料总成本下降。
 
 ## 验收边界
 

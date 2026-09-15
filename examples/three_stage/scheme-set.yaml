@@ -1,9 +1,9 @@
 schema: wwtp-fin/scheme-set/1
 include_base: false
 objective:
-  metric: tariff_blended_gross
+  metric: decision_cost_wan
   direction: min
-  basis: 合成示例：固定投资、服务量和补助，仅比较可实现的单价方案；不代表现实项目报价。
+  basis: 合成示例：同等服务期间内最小化服务费与补助合计；不代表现实项目报价。
 hard_constraints: []
 candidates:
 - id: cash_gap

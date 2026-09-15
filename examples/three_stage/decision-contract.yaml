@@ -2,15 +2,41 @@ schema: wwtp-fin/decision-contract/1
 id: synthetic-decision
 revision: '1'
 objective:
-  metric: tariff_blended_gross
+  metric: decision_cost_wan
   direction: min
-  basis: 合成示例：固定投资、服务量和补助，仅比较可实现的单价方案；不代表现实项目报价。
+  basis: 合成示例：同等服务期间内最小化服务费与补助合计；不代表现实项目报价。
+cost_goal:
+  statement: 在固定服务边界下，比较资金闭合的完整报价，降低服务费与补助合计。
+  evidence_refs: [synthetic://workflow]
+  perspective: service_grant_payment
+  valuation: nominal
+  horizon_years: 27
+  discount_rate: 0.06
+  requirements:
+  - topic: service
+    status: required
+    constraint_metrics: []
+    condition_ids: [implementation]
+    basis: 合成协议规定同等服务范围，实施核验作为独立条件。
+    evidence_refs: [synthetic://fixed-scope]
+  - topic: compliance
+    status: required
+    constraint_metrics: []
+    condition_ids: [implementation]
+    basis: 合成协议仅验证流程，真实资格及批复须另行落实。
+    evidence_refs: [synthetic://workflow]
+  - topic: investment_return
+    status: not_applicable
+    constraint_metrics: []
+    condition_ids: []
+    basis: 本合成测试为完整报价择一验证；不构成实际投资报价，也不设虚构的真实投资人收益门槛。
+    evidence_refs: [synthetic://workflow]
 comparison_basis:
   perspective: 服务付费方
-  unit: 元/m³
-  scope: 固定其他费用下的服务单价比较
-  period: 与来源基准相同的运营期
-  discount_basis: 单价目标不折现；财务评价沿用基准声明
+  unit: 万元
+  scope: 含税服务费与资本补助合计，不代表全部甲方净支出
+  period: 共同27年，含建设2年与运营25年
+  discount_basis: 主目标为名义合计，同时按共同6%列现值
 hard_constraints:
 - metric: cum_cash_min
   op: '>='

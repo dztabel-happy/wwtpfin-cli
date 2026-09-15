@@ -19,7 +19,18 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     if any(out.iterdir()):
         parser.error("output must be empty")
-    evidence = assets / "examples/minimal_complete/evidence.json"
+    source_evidence = assets / "examples/minimal_complete/evidence.json"
+    evidence_data = json.loads(source_evidence.read_text(encoding="utf-8"))
+    for ident, method in (
+        ("synthetic://payer", "Test payer covers all service, grant and terminal payments"),
+        ("synthetic://receipt", "Synthetic fixed receipt independently specified by this test"),
+    ):
+        evidence_data["supporting"].append({"evidence_id": ident, "label": "Synthetic payment workpaper",
+            "source": "synthetic://three-stage-acceptance", "as_of": "2026-01",
+            "provided_by": "Synthetic test", "evidence_state": "unverified",
+            "value": {"type": "assumption_workpaper", "method": method}})
+    evidence = out / "synthetic-evidence.json"
+    evidence.write_text(json.dumps(evidence_data, ensure_ascii=False, indent=2), encoding="utf-8")
     contract = assets / "examples/three_stage/decision-contract.yaml"
 
     def run(*parts, expect=0, error_contains=None):
@@ -160,8 +171,9 @@ def main():
 
     # A lower tariff funded by a larger grant is more expensive at the common payer scope.
     changed_contract = deepcopy(data["decision_contract"])
-    objective = {"metric": "payer_net_outflow_wan", "direction": "min", "basis": "合成收支范围内净支付"}
+    objective = {"metric": "decision_cost_wan", "direction": "min", "basis": "合成收支范围内净支付"}
     changed_contract["objective"] = objective
+    changed_contract["cost_goal"]["perspective"] = "payer_net_outflow"
     changed_contract["comparison_basis"].update(unit="万元", scope="服务费、补助减另列代收收入")
     candidates = [deepcopy(next(c for c in data["scheme_set"]["candidates"] if c["id"] == "complete"))]
     candidates[0].update(id="maintain", overrides={})
@@ -197,8 +209,11 @@ def main():
     assert cost_final["capital"]["grant_use_wan"] == [1000, 0]
     assert abs(sum(cost_final["capital"]["investment"]) - sum(cost_final["capital"]["debt_draw"])
                - sum(cost_final["capital"]["equity_draw"]) - 1000) < 1e-7
-    changed_spec["objective"] = data["objective"]
-    run("compare", "-p", payer_params, "--contract", contract, "--evidence", evidence,
+    proxy_contract = deepcopy(data["decision_contract"])
+    proxy_contract.pop("cost_goal")  # explicitly exercise the old exploratory price proxy
+    proxy_contract["objective"]["metric"] = "tariff_blended_gross"
+    changed_spec["objective"] = proxy_contract["objective"]
+    run("compare", "-p", payer_params, "--contract", save("proxy-contract.json", proxy_contract), "--evidence", evidence,
         "--schemes", save("proxy-schemes.json", changed_spec), "-o", out / "proxy")
     proxy = json.loads((out / "proxy/scheme-comparison.json").read_text(encoding="utf-8"))
     assert proxy["candidates"][1]["readiness"] == "not_comparable"
@@ -248,10 +263,12 @@ def main():
             "start_period_index": 2, "amortisation_years": 5}]}
     cash_params = save("cash-project.json", trial)
     cash_contract = deepcopy(data["decision_contract"])
+    cash_contract["cost_goal"]["horizon_years"] = 11
     cash_contract["fixed_parameters"] = {"concession_years": 10}
     cash_contract["hard_constraints"] = [{"metric": "cash_dscr_min", "op": ">=",
         "value": 1, "basis": "合成验收：检验当期现金覆盖，不是银行要求"}]
     cash_spec = deepcopy(changed_spec)
+    cash_spec["objective"] = cash_contract["objective"]
     cash_spec["candidates"] = []
     for pid, price in [("book_pass", 100/365), ("cash_pass", .55)]:
         row = deepcopy(candidates[0])
@@ -300,6 +317,7 @@ def main():
     for asset in trial["capital"]["assets"]:
         asset["life_years"] = 24.5
     fractional_contract = deepcopy(data["decision_contract"])
+    fractional_contract["cost_goal"]["horizon_years"] = 26
     fractional_contract["fixed_parameters"] = {"concession_years": 24.5}
     fractional_spec = deepcopy(data["scheme_set"])
     complete = deepcopy(next(c for c in fractional_spec["candidates"] if c["id"] == "complete"))

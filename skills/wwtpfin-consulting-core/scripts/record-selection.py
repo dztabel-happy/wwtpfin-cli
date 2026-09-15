@@ -30,6 +30,10 @@ def main():
                         help="scope explicitly confirmed by the user; omission requires implementation conditions")
     args = parser.parse_args()
     comparison = json.loads(args.comparison.read_text(encoding="utf-8"))
+    decision = comparison.get("decision_review", {})
+    if not decision.get("passed"):
+        parser.error("cost goal or decision requirements are incomplete: "
+                     + "; ".join(str(v) for v in decision.get("issues", [])))
     review = comparison.get("research_review", {})
     if not review.get("ready_for_selection"):
         parser.error("research is incomplete; a conditional choice does not waive research gaps: "
