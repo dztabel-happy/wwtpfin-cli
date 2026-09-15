@@ -53,7 +53,7 @@ wwtp-fin schema --kind scheme-set
 
 用户可以明确选择维持基准：另设候选 ID，使用空 `overrides: {}`，完整登记其理由、代价与条件，照常接受同一合同检查。自动附带的 `base` 行仅作参照，不自动表示来源已核验或已获选择。
 
-兼容性：未传合同的旧 `compare` 仍可探索并按数值目标排序，`feasible` 仅代表已声明的数值/固定边界通过，不代表项目已审批。新增 `numerically_feasible`、`readiness`、`eligible_for_selection` 和 `selectable_shortlist` 分别披露状态；未绑定合同的探索不能 `finalize`。退出 0 只表示存在数值可行候选，不能据此推定有可定稿方案。所有比较输出目录必须为空。
+兼容性：未传合同的 `compare` 仍可探索；`feasible` 表示数值、固定边界、可比口径及已知模型资格均通过，不代表项目已审批。`model_eligibility` 按原合同和续期披露内部错误、范围缺口、模型限制、政策发现及具体待落实条件；相同判断进入共同研究情景与最终重算。`numerically_feasible`、`readiness`、`eligible_for_selection` 和 `selectable_shortlist` 分别披露状态；未绑定合同的探索不能 `finalize`。退出 0 只表示存在可进入当前情景优选的候选，不能据此推定研究已完成或有可定稿方案。所有比较输出目录必须为空。
 
 选择哈希采用 UTF-8、排序键、紧凑分隔符的规范 JSON。二进制用户可通过 skill 附带的 `record-selection.py` 记录已发生的确认。最终运行绑定实际计算代码/配置、Python 与 YAML 版本；计算环境变化应重新比较，历史 `verify-final-run` 不要求安装原版本。哈希用于追踪一致性，不是对确认人的身份认证或对资格、审批的独立证明。
 
@@ -65,7 +65,7 @@ wwtp-fin schema --kind scheme-set
 | 1 | 参数、文件或成果包校验错误。 |
 | 2 | `run` 或 `check` 的财务一致性检查未通过。 |
 | 3 | `build` 已写出成果包，但质量门禁未通过。 |
-| 4 | `solve` 未求得可行解，或 `compare` 没有满足全部硬约束的候选。 |
+| 4 | `solve` 未求得可行解，或 `compare` 没有通过数值、范围、可比性及已知政策适用要求的候选；比较诊断文件仍保留。 |
 
 ## 告警 ID
 
