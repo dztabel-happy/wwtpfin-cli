@@ -102,7 +102,7 @@ print(json.dumps(value, ensure_ascii=False, indent=2))
 
 来源事实必须保留范围和限定语。设计能力不等于年均处理量，整体成本不等于新增项目成本，资产寿命不等于项目日历年份。**报告中出现的未来水量、价格或成本预测，仍是估算，不因写进可研便成为确定事实。**原文没有建立所需含义时，估算须说明推导方法，不能仅引用原文件名便把推导结果归为事实。缺少 Excel 不阻止基于工程量、适用定额、地区价格或明确研究提案开展测算。
 
-`kind: source_fact` 必须在该假设的 `evidence_refs` 中引用 `supporting.value.type: parameter_basis`，不能只改 `kind` 逃过重要估算的研究门槛。该值包含：
+完整降本决策中，`source_fact`、`estimate`、`design_choice` 均必须在该假设的 `evidence_refs` 中引用 `supporting.value.type: parameter_basis`，不能只改 `kind` 逃过重要估算的研究门槛。该值包含：
 
 | 字段 | 绑定要求 |
 |---|---|
@@ -111,13 +111,24 @@ print(json.dumps(value, ensure_ascii=False, indent=2))
 | `baseline_values` | 对象，键为真实点路径，值为当前已解析基准中的完整值；包括需要时的 `continuation` 虚拟路径。 |
 | `source_refs` | 非空来源证据 ID 数组；事实分类时，每项须指向有效 `source_snapshot` 原文及可复现引文。 |
 | `method` | 取值、单位换算和来源解释方法，不能仅重复文件名。 |
-| `uncertainty` | 可选的不确定性说明，不替代应有的估算分类及情景。 |
+| `uncertainty` | 估算必须说明合理范围或不同推导方法；事实和设计选择可选。 |
+| `scenario_values` | 估算必须绑定所有关联情景的真实取值，格式见下文；改变范围需要修改依据并重新比较。 |
 
 `baseline_values` 必须覆盖该假设全部 `paths`，值与本轮基准严格一致；显式完整父对象可以覆盖其子路径，几个叶值不能代表未完整绑定的父对象。不要使用四舍五入的展示值、旧 run 值或研究模型指纹替代规范输入。改了基准就重建依据绑定；续期值来自当前 `base_continuation.params`，不是从另一候选随意取值。事实的 `source_refs` 沿用上述来源快照的原文、哈希、精确引文、定位与日期要求。
 
-`estimate` 和 `design_choice` 仍保留既有情景/变体门槛，普通估算底稿不强制改成快照。若它们引用 `parameter_basis`，同样校验分类、路径值和真实来源引用；不会因为有这种对象就升级为已核实事实。CLI 认证的是绑定一致性，不认证正文真假、解释正确、预测确定性、重要性判断或研究完备性。
+估算和设计选择的 `source_refs` 可以引用真实估算底稿或方案提案，不强制伪装成原文事实。事实仍须引用原文快照。`scenario_values` 是以情景 ID 为键的对象，每项包含 `overrides`、`candidate_overrides`、`continuation_overrides` 三个对象；后两项直接以候选 ID 映射实际覆盖参数，不含说明字段。没有派生或续期覆盖时填 `{}`。例如 `{"low": {"overrides": {"vol_growth_rate": 0.01}, "candidate_overrides": {}, "continuation_overrides": {}}}`。其取值必须与该估算关联的全部 `research.scenarios` 严格一致；删减情景或任意缩小波动幅度会使依据失配。新来源或新的估算解释允许修改，但须更新依据并重新比较。CLI 核验绑定和完整行使，不认证来源解释或估算方法的专业正确性。
 
-`material` 表示该假设是否可能影响目标、可行性或选择，须由研究者说明判断依据，不能为通过检查随意改为 `false`。重要估算须有应用到全部候选且实际改变参数的有效情景。重要设计选择须通过实际候选或情景研究；若用户明确固定，才可用 `user_bound: true` 并在依据中绑定该选择。Agent 提出的默认值不是用户固定值。
+`material` 保留为研究者的优先级标记，不再豁免研究。所有已登记估算均须行使应用到全部候选的有效情景；可以在同一情景中检验有关联的多个估算，不要求逐字段单开任务。设计选择均须通过实际候选或情景比较；只有用户明确固定且合同绑定路径和值时，才可以 `user_bound: true` 免除变体。不得通过删掉整条假设逃避检查：完整决策另有基于模型的关键输入覆盖检查。
+
+### 模型自动产生的研究清单
+
+完整合法输入的 `intake` 输出 `research_plan`，列出需分类绑定的关键输入与本项目触发的具体研究事项。完整降本比较的 `research_review.plan_review` 同时检查基准、候选和续期中新出现的事项。先读清单再组织研究，不让业务人员自行列财务字段。
+
+`basis_paths` 中的输入须被假设的 `paths` 覆盖并绑定当前值，或属于决策合同已经固定的路径。已有完整父对象可覆盖子项。日期、范围、估算和设计提案按实际性质登记，不能为了省事把混合对象全部称为事实。
+
+具体研究事项包括投资与更新分别处置、每项运营成本、适用的增值税与所得税事项、资本结构及付款安排。一个领域做过一项试算不代表该领域全部事项完成。`evaluated` 的方向须对该事项相关路径产生真实参数变化；不能只改旁边另一项成本。固定或不适用事项可以沿用有原文和明确范围的 `excluded` / `not_applicable`，用具体 `paths` 限定范围；整领域排除须有覆盖该范围的完整依据。
+
+该清单按输入的经济内容生成最低研究要求，不是封闭杠杆库。外部新政策、工程替代、共享运营等继续作为新方向进入现有研究和组合流程。清单处置与来源解释、工程适用性均要检查；字段齐全不证明所有外部机会已经发现。
 
 不确定性可能来自数值也可能来自方法。一个估算方法上下小幅浮动，不能代替对另一种合理来源解释或推导方法的比较。情景数量应服务于这些真实问题。
 
@@ -161,7 +172,7 @@ CLI 自动检查所有已测情景赢家与剩余已研究单项的组合处置�
 
 ## `research_review` 输出与使用
 
-比较文件中的 `research_review` 提供 `status`、`ready_for_selection`、`issues`、`scenario_results`、`baseline_winners`、`robust_winners`、`recommended_candidates`、`assumption_tests`、`combination_coverage`、`source_exclusion_review`、目标与研究哈希。各情景的 `winners` 可以包含多个并列候选；`robust_winners` 为所有已测情景赢家集合的交集。
+比较文件中的 `research_review` 提供 `status`、`ready_for_selection`、`issues`、`scenario_results`、`baseline_winners`、`robust_winners`、`recommended_candidates`、`assumption_tests`、`combination_coverage`、`source_exclusion_review`、`plan_review`、目标与研究哈希。各情景的 `winners` 可以包含多个并列候选；`robust_winners` 为所有已测情景赢家集合的交集。
 
 | 状态 | 含义及后续动作 |
 |---|---|

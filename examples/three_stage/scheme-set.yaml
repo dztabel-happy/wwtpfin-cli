@@ -141,6 +141,27 @@ research:
       scope_candidate_ids: *id001
       applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
       exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
+  - id: fixed_financing_terms
+    domain: financing_and_payment
+    status: excluded
+    candidate_ids: []
+    paths:
+    - equity_ratio
+    - loan_tranches
+    - operating_loan_tranches
+    - financing_declaration
+    basis: This synthetic fixture fixes the funding terms while comparing quoted payments; real projects must research
+      alternatives.
+    evidence_refs:
+    - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids:
+      - cash_gap
+      - conditional
+      - complete
+      applicability: Synthetic fixture funding terms are fixed
+      exceptions: No implication for real project funding alternatives
   assumptions:
   - id: volume
     paths:
@@ -149,9 +170,82 @@ research:
     basis: 合成测试将处理量作为估计，保守分支为各期减少10%；不是现实水量预测方法。
     evidence_refs:
     - synthetic://demand-range
+    - synthetic://basis/volume
     material: true
     scenario_ids:
     - lower_volume
+  - id: synthetic-fixed-inputs
+    kind: source_fact
+    paths:
+    - amort_base_wan
+    - amort_years
+    - base_calendar_year
+    - billable_cap_enabled
+    - billable_cap_factor
+    - calculation_basis
+    - capital
+    - cit_mode
+    - days_per_year
+    - debt_ratio
+    - dividend_payout_ratio
+    - dscr_include_short_term
+    - enable_working_capital_loan
+    - equity_ratio
+    - evaluation_date
+    - financing_declaration
+    - hist_vol_m3d
+    - income_tax_rate
+    - loan_tranches
+    - loss_carryforward_years
+    - mode
+    - operating_loan_tranches
+    - opex_base_volume_m3d
+    - opex_exclusions
+    - opex_items
+    - other_taxes
+    - residual_rate
+    - revenue
+    - revenue_round_digits
+    - share_nonresident
+    - share_resident
+    - short_loan_rate
+    - surplus_reserve_cap_ratio
+    - surplus_reserve_rate
+    - tariff_blend_round_digits
+    - tariff_blended_gross
+    - tariff_escalation
+    - tariff_nonresident
+    - tariff_resident
+    - tariff_special
+    - tax_holiday_free_years
+    - tax_holiday_half_years
+    - tax_holiday_start_operation_year
+    - terminal_asset_event
+    - terminal_value_after_tax_wan
+    - terminal_value_method
+    - transfer_price_wan
+    - vat_addon_city
+    - vat_addon_edu
+    - vat_addon_local_edu
+    - vat_credit_begin_other_wan
+    - vat_credit_begin_service_wan
+    - vat_credit_begin_wan
+    - vat_line_mode
+    - vat_method
+    - vat_output_rate
+    - vat_refund_ratio
+    - vat_refund_taxable
+    - vat_relief
+    - vat_simplified_rate
+    - vol_growth_rate
+    - vol_segment_len
+    - vol_year1_m3d
+    - water
+    basis: Literal fixed inputs of this synthetic fixture, not real project facts
+    material: true
+    scenario_ids: []
+    evidence_refs:
+    - synthetic://basis/synthetic-fixed-inputs
   scenarios:
   - id: lower_volume
     assumption_ids:

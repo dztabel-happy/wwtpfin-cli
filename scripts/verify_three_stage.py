@@ -2,6 +2,7 @@
 """Run synthetic workflow acceptance against an installed CLI, without core imports."""
 import argparse
 from copy import deepcopy
+from hashlib import sha256
 import json
 import shutil
 from pathlib import Path
@@ -82,6 +83,46 @@ def main():
             item["m3d"] *= .9
         research["scenarios"][0]["overrides"] = {"vol_segments": volumes}
         spec["research"] = research
+        # Each changed fixture owns a separate evidence snapshot. Do not reuse
+        # yesterday's bound baseline values or rewrite earlier accepted evidence.
+        label = ids[0]
+        normalized = json.loads(run("run", "-p", save(label + "-basis-input.json", parameters),
+            "--no-sensitivity", "--no-boundaries", "--no-tables", "--compact"))["params"]
+        fixture_evidence = deepcopy(evidence_data)
+        source_id = "synthetic://fixture/" + label
+        body = "Literal synthetic acceptance protocol, not real project facts:\n" + json.dumps(normalized, sort_keys=True)
+        supporting = fixture_evidence["supporting"]
+        supporting.append({"evidence_id": source_id, "label": label, "source": source_id,
+            "as_of": "2025-12-01", "provided_by": "Synthetic acceptance", "evidence_state": "unverified",
+            "value": {"type": "source_snapshot", "text": body, "sha256": sha256(body.encode()).hexdigest(),
+                "citation": {"start": 0, "end": len(body), "text": body, "locator": "synthetic fixture"}}})
+        assumptions = research["assumptions"]
+        declared = {path for item in assumptions if item["id"] != "synthetic-fixed-inputs" for path in item["paths"]}
+        fixed = next(item for item in assumptions if item["id"] == "synthetic-fixed-inputs")
+        fixed["paths"] = sorted(key for key in normalized if key not in declared)
+        scenarios = {item["id"]: item for item in research["scenarios"]}
+
+        def value(path):
+            current = normalized
+            for part in path.split("."):
+                current = current[int(part)] if isinstance(current, list) else current[part]
+            return deepcopy(current)
+
+        for item in assumptions:
+            ident = source_id + "/" + item["id"]
+            packet = {"type": "parameter_basis", "kind": item["kind"],
+                "baseline_values": {path: value(path) for path in item["paths"]},
+                "source_refs": [source_id], "method": "Literal values and alternatives of this synthetic protocol"}
+            if item["kind"] == "estimate":
+                packet.update(uncertainty="Synthetic protocol specifies the following alternative values",
+                    scenario_values={key: {"overrides": scenarios[key]["overrides"],
+                        "candidate_overrides": {i: v["overrides"] for i, v in scenarios[key].get("candidate_overrides", {}).items()},
+                        "continuation_overrides": {i: v["overrides"] for i, v in scenarios[key].get("continuation_overrides", {}).items()}}
+                        for key in item["scenario_ids"]})
+            supporting.append({"evidence_id": ident, "label": item["id"], "source": source_id,
+                "as_of": "2025-12-01", "provided_by": "Synthetic acceptance", "evidence_state": "unverified", "value": packet})
+            item["evidence_refs"] = [ident]
+        return save(label + "-evidence.json", fixture_evidence)
 
     assert not rows["cash_gap"]["numerically_feasible"]
     assert rows["conditional"]["readiness"] == "conditions_pending"
@@ -188,9 +229,9 @@ def main():
                        "start_period_index": 3, "amortisation_years": 25}]}})
     changed_spec = {"schema": "wwtp-fin/scheme-set/1", "include_base": False,
                     "objective": objective, "hard_constraints": [], "candidates": candidates}
-    attach_synthetic_research(changed_spec, params)
+    cost_evidence = attach_synthetic_research(changed_spec, payer_result["params"])
     run("compare", "-p", payer_params, "--contract", save("cost-contract.json", changed_contract),
-        "--evidence", evidence, "--schemes", save("cost-schemes.json", changed_spec), "-o", out / "cost-comparison")
+        "--evidence", cost_evidence, "--schemes", save("cost-schemes.json", changed_spec), "-o", out / "cost-comparison")
     costs = json.loads((out / "cost-comparison/scheme-comparison.json").read_text(encoding="utf-8"))
     assert costs["selectable_shortlist"] == ["maintain", "lower_price"]
     assert abs(costs["candidates"][1]["objective_value"] - costs["candidates"][0]["objective_value"] - 745.4125) < 1e-7
@@ -200,7 +241,7 @@ def main():
                     "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"], check=True, capture_output=True)
     run("finalize", "--comparison", out / "cost-comparison/scheme-comparison.json",
         "--selection", out / "cost-selection.json", "--contract", out / "cost-contract.json",
-        "--evidence", evidence, "-o", out / "cost-final")
+        "--evidence", cost_evidence, "-o", out / "cost-final")
     run("verify-final-run", out / "cost-final")
     cost_final = json.loads((out / "cost-final/deliverable/result.json").read_text(encoding="utf-8"))
     assert cost_final["scalars"]["payer_net_outflow_wan"] == costs["candidates"][1]["objective_value"]
@@ -274,9 +315,9 @@ def main():
         row = deepcopy(candidates[0])
         row.update(id=pid, name=pid, overrides={"tariff_blended_gross": price})
         cash_spec["candidates"].append(row)
-    attach_synthetic_research(cash_spec, trial)
+    cash_evidence = attach_synthetic_research(cash_spec, trial)
     run("compare", "-p", cash_params, "--contract", save("cash-contract.json", cash_contract),
-        "--evidence", evidence, "--schemes", save("cash-schemes.json", cash_spec),
+        "--evidence", cash_evidence, "--schemes", save("cash-schemes.json", cash_spec),
         "-o", out / "cash-comparison")
     cash_comparison = out / "cash-comparison/scheme-comparison.json"
     cash = json.loads(cash_comparison.read_text(encoding="utf-8"))
@@ -293,7 +334,7 @@ def main():
         "--confirmed-at", "2026-09-11", "--reference", "synthetic://cash",
         "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"], check=True, capture_output=True)
     run("finalize", "--comparison", cash_comparison, "--selection", out / "cash-selection.json",
-        "--contract", out / "cash-contract.json", "--evidence", evidence, "-o", out / "cash-final")
+        "--contract", out / "cash-contract.json", "--evidence", cash_evidence, "-o", out / "cash-final")
     run("verify-final-run", out / "cash-final")
     cash_final = json.loads((out / "cash-final/deliverable/result.json").read_text(encoding="utf-8"))
     assert cash_final["scalars"]["cash_dscr_min"] >= 1
@@ -326,11 +367,11 @@ def main():
     alternative.update(id="higher_quote", name="非整年期另一完整报价",
                        overrides={"tariff_blended_gross": trial["tariff_blended_gross"] + .1})
     fractional_spec.update(include_base=False, candidates=[complete, alternative])
-    attach_synthetic_research(fractional_spec, trial)
+    fractional_evidence = attach_synthetic_research(fractional_spec, trial)
     fractional_spec["research"]["baseline_candidate_id"] = "complete"
     run("compare", "-p", save("fractional-project.json", trial),
         "--contract", save("fractional-contract.json", fractional_contract),
-        "--schemes", save("fractional-schemes.json", fractional_spec), "--evidence", evidence,
+        "--schemes", save("fractional-schemes.json", fractional_spec), "--evidence", fractional_evidence,
         "-o", out / "fractional-comparison")
     fractional_comparison = out / "fractional-comparison/scheme-comparison.json"
     compared = json.loads(fractional_comparison.read_text(encoding="utf-8"))
@@ -341,7 +382,7 @@ def main():
         "--purpose", "workflow_validation", "--reason", "合成验收选择并保留研究限制"], check=True, capture_output=True)
     run("finalize", "--comparison", fractional_comparison,
         "--selection", out / "fractional-selection.json", "--contract", out / "fractional-contract.json",
-        "--evidence", evidence, "-o", out / "fractional-final")
+        "--evidence", fractional_evidence, "-o", out / "fractional-final")
     run("verify-final-run", out / "fractional-final")
     fractional = json.loads((out / "fractional-final/deliverable/result.json").read_text(encoding="utf-8"))
     axis, series = fractional["period"]["time_axis"], fractional["series"]
