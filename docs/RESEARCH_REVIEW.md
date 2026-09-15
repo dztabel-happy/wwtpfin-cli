@@ -23,11 +23,17 @@ wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml -
 
 每次比较先保留与当轮主目标最优值相差不超过其 `tolerance` 的候选，再对这一组按次级目标依次处理。最后仍可有并列。容差是有依据的无差异范围，不能改变硬约束、补救计算错误或为指定候选放宽标准。多个目标不跨口径相加，也不暗设权重；未登记的次级目标不用于自动打破并列。
 
+候选列表、CLI 摘要与每个研究情景共用这一排序算法。`ranking_groups` 按优先顺序列出并列组，`shortlist` 仅将各组展开；同组按 ID 排列是稳定展示，不构成偏好。`best_candidates` 是完整首组；旧字段 `best_by_objective` 仅在首组唯一时给出 ID，并列时为 `null`。这些字段描述本情景内的数值排序；研究情景还排除模型未闭合候选，实际推荐须继续检查共同情景与实施条件。
+
 主目标、服务边界和硬约束保持一致。降低资源投入、降低项目资金支出和改变财政支付时点可能是不同结果；若实际推荐依赖其中另一项，应在比较前说明主次与取舍并更新合同，不能算完后更换判据。
 
 ## `research` 输入
 
 `research` 由 `directions`、`assumptions`、`scenarios`、`combinations` 和非空 `stopping_reason` 组成。它直接放入当前方案集，供计算与选择绑定，不再要求另建一套同内容台账。来源文件和工程推导仍保留在原有证据与底稿中。
+
+四类条目的 `evidence_refs` 均须唯一解析到本次绑定 `evidence.supporting[].evidence_id`。只写一个文件名、URL或不存在的编号不等于登记证据；先把实际原文、估算底稿或计算记录放入 supporting，再引用其 ID。缺失、重复或仅在 unresolved 中的引用使 `research_evidence_review.passed=false`，保留计算而阻止收口。普通估算可继续标为 `unverified`，不要求伪装成已核验事实，也不要求全部材料使用下述严格来源快照。引用可解析不证明原文理解、估算方法或政策适用正确。
+
+`user_bound: true` 只用于用户实际固定的设计选择；其全部关联路径和值必须同时由决策合同 `fixed_parameters` 覆盖，基准与候选保持相同。产品验证合同与研究是否一致，不认证录入者声称的用户确认真实；用户的原话及来源仍须保留。
 
 ### 方向及措施
 

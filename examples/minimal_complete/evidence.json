@@ -118,6 +118,21 @@
           "locator": "原生合成工作流验收协议全文"
         }
       }
+    },
+    {
+      "evidence_id": "synthetic://demand-range",
+      "label": "合成示例水量下界定义",
+      "source": "synthetic://three-stage-demand-fixture",
+      "as_of": "2026-01",
+      "provided_by": "合成示例定义",
+      "evidence_state": "unverified",
+      "value": {
+        "type": "assumption_workpaper",
+        "method": "仅用于合成示例：各运营期水量统一为原输入的90%，候选报价不变，全部候选完整重算；不代表现实预测方法。",
+        "stress_multiplier": 0.9,
+        "base_volume_source": "examples/minimal_complete/project.yaml#vol_segments",
+        "unit": "m3/day"
+      }
     }
   ]
 }
