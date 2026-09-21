@@ -46,6 +46,23 @@ For a policy used to adopt or exclude a measure, read the authoritative provisio
 
 Preserve the source snapshot and reproducible provision locator in the existing evidence record when a structural exclusion relies on it; use the installed evidence schema and `docs/RESEARCH_REVIEW.md`. An extracted passage must come from the saved source, not a model-written summary. Keep project eligibility uncertainty separate from missing policy text. A clearly labelled conditional amount may be researched while eligibility is pending, but an unread or superseded provision cannot close an alternative as prohibited. The CLI checks source binding and references; the agent remains responsible for authenticity, context and interpretation.
 
+## Reproducible original excerpts
+
+Save original source bytes under `sources/`. Use the source locator command first to inspect positions, then extract the required complete passage or table. Previews are truncated navigation aids, not source evidence.
+
+```bash
+wwtp-fin source-snapshot sources/report.docx --extractor docx-body/1
+wwtp-fin source-snapshot sources/report.docx --extractor docx-body/1 --offset 100 --limit 100
+wwtp-fin source-snapshot sources/report.docx --extractor docx-body/1 --selector '{"start":12,"end":15}' --evidence-dir input
+wwtp-fin source-snapshot sources/policy.html --extractor html-element/1 --selector '{"tag":"table","index":0}' --evidence-dir input
+```
+
+Use the returned object unchanged as `supporting[].value`; add the actual source address, date and provider to the supporting record. Choose positions from the actual file, not these example numbers. The evidence schema permits adding the separately justified `scope`. Keep table headers and adjacent qualifying paragraphs with the excerpt; put your interpretation and estimation method in their own workpapers. Do not rewrite an excerpt to make its units or amounts match a preferred interpretation.
+
+`artifact.path` is relative to the evidence file's directory, independent of the command's working directory. When copying evidence into a new run input directory before `build`, preserve that relationship or update its relative path before comparison/selection; never edit an already bound final input. The CLI archives referenced original bytes and re-extracts from the archive during verification. Archive verification does not search the old workspace or fetch the URL.
+
+New complete research requires file binding for the external snapshots it uses. Genuine dialogue constraints used for the decision contract or explicitly fixed parameter leaves retain their dialogue status; they are not certified external documents and cannot be reused as proof of a policy or an external numerical reading. The initial extractors cover native DOCX body blocks and saved static UTF-8 HTML elements. Unsupported formats remain an explicit source-binding limitation: ordinary conditional calculations can continue, but do not claim that external source verification or the complete research gate has passed. Do not manufacture an HTML or Word "original" from your own summary to bypass this boundary.
+
 ## Spreadsheet formula and label gate
 
 Inspect the label, formula, referenced cells, cached result, unit and surrounding table together. A formula-derived value is usable only when its required references are populated and accessible, it has no spreadsheet error, its dimensions are coherent, and it agrees with the applicable labels and source narrative.
@@ -72,3 +89,5 @@ Map source-backed facts at their actual evidence state. Put missing project evid
 The CLI determines financial calculation and structured semantics. The agent handles source interpretation, supported engineering estimates and authorized proposal design, while keeping those evidence categories distinct.
 
 Do not treat the existence of a source locator, an evidence identifier, an `unverified` label or a successful calculation as proof of a sound estimate. Check the source semantics and estimation method first; then use common scenarios to examine the consequence of remaining uncertainty.
+
+续期、付款方或实施条件的外部报价/条款同样须绑定原件；不能改成普通字符串跳过检查。若目前只能估算，让模型的 `evidence_refs` 引用已在 `research.assumptions` 登记并通过现有估算/设计选择审查的 `parameter_basis`，保留来源、方法及所需情景；不要把自写估算底稿伪称为外部原文。

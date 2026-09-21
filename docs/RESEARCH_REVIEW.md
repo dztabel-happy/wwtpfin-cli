@@ -102,6 +102,27 @@ print(json.dumps(value, ensure_ascii=False, indent=2))
 
 来源正文应来自实际取得的原文或附件，保留完整相关条款及限定语；不能把摘要或 Agent 自写结论改名为原文。CLI 不要求另设外置文件路径字段，只检查嵌入记录存在、正文哈希、引文切片及范围声明一致，不认证正文真实性、法律效力、上下文是否充分或适用解释正确。政策存在和项目资格成立仍是两件事。缺附件、条款未读或含义未决时可继续条件试算，不能据此关闭另一条路径。
 
+### 原始文件与摘录绑定
+
+新完整成本研究中，实际引用的外部 `source_snapshot` 还须提供 `artifact`：`path`、原始文件字节的 `sha256`、版本化 `extractor` 和 `selector`。用 `source-snapshot` 直接产生快照，避免自行改写原文后仅对改写文本计算哈希。省略 `--selector` 时只列位置与截断预览；预览不能用作正式摘录。
+
+```bash
+wwtp-fin source-snapshot sources/report.docx --extractor docx-body/1
+wwtp-fin source-snapshot sources/report.docx --extractor docx-body/1 --offset 100 --limit 100
+wwtp-fin source-snapshot sources/report.docx --extractor docx-body/1 --selector '{"start":12,"end":15}' --evidence-dir input
+wwtp-fin source-snapshot sources/policy.html --extractor html-element/1 --selector '{"tag":"table","index":0}' --evidence-dir input
+```
+
+位置示例须换成实际文件的位置。`docx-body/1` 按 `word/document.xml` 正文顶层段落和表格编号，选择零起始半开范围；保留物理表格行列，不复制合并格金额，也不推断页码。`html-element/1` 定位已保存静态 UTF-8 HTML 中受支持标签的第 `index` 个元素，不执行脚本或联网。返回的完整提取文本必须与快照 `text` 完全一致，再核正文哈希及引文切片。保持表头、单位及相关限定语的上下文；真实数字存在不等于业务含义正确。
+
+活跃输入的 `artifact.path` 始终以 `--evidence` 文件父目录解析，不能猜当前工作目录。Python 调用带原件的输入时显式给 `source_base_dir`。比较保存原 evidence 和 `sources/<文件摘要>.bin`；成果包也保存自己引用的原始字节。最终主成果承担完整研究来源归档，续期成果只保存其携带的来源。归档验证按摘要读取包内原件，搬离旧工作区后仍可离线提取；缺失、变更或包外链接不回退到原路径或网络。比较后原文件改变，即使 evidence JSON 未改，也须重新比较与确认。
+
+`source_artifact_review` 独立记录文件提取是否复现。完整研究的引用包括研究条目、成本目标、实际模型及条件、付款方收支和续期证据，并沿用 `parameter_basis.source_refs` 一跳；外部事实、估算输入和来源排除不能靠删掉 `artifact` 恢复通过。真实用户对话只用于目标合同或有相同取值锁定的参数约束时，可以保留对话身份，不能冒充文件已核验；把同一对话记录用于外部数值推导，不能仅凭 `authority` 豁免原件。
+
+普通 `build` 不要求研究收口，但已声明的原件绑定必须真实成立。未支持的来源格式须如实保留未机械绑定状态；条件测算仍可开展，不能声称完整研究来源门禁通过。不得把自写摘要另存为 HTML/Word 冒充原始资料。旧成果缺少新标记时保留历史验证语义；新创建始终检查新绑定，新包存在标记或原件声明却缺审查不能降级为历史豁免。
+
+这些检查证明保存字节到摘录的复现，不证明发布者身份、完整上下文、选列、总额与子集关系、政策效力或项目适用性。估算底稿和专业解释仍须单独审查，不能用算术正确代替原文含义正确。
+
 ### 事实、估算与设计选择
 
 `assumptions[]` 每条包含 `id`、非空 `paths`、`kind`、`basis`、`evidence_refs`、`material`、`scenario_ids`，可选 `user_bound`。`kind` 为 `source_fact`、`estimate` 或 `design_choice`。
@@ -259,3 +280,5 @@ CLI 自动检查所有已测情景赢家与剩余已研究单项的组合处置�
 情景必须覆盖全部参与比较的方案，但不要求每个方案数值都改变。某项折扣未取得时，原本没有折扣的基准可以保持不变；须通过共同或逐候选覆盖显式应用同一条件，至少有一个方案受到实际参数变化，并且全部方案均完成重算。省略某方案或只改说明文字不能满足这一要求。
 
 `combination_retention_review` 检查组合声称继承的独立参数变化是否在全部已测状态中丢失。例如分别调整三个经营成本分项，合并完整数组时把第一项恢复成基准，不能仅凭组合成员 ID 宣称已包含三项措施。检查保留有依据的条件交互：措施可以只在某一已测情景中生效，也可以显式替代旧措施。多个措施共同改变同一字段时，产品不凭路径推断工程兼容性或证明叠加幅度；这些仍须完整计算及依据核验。
+
+直接用于续期、付款方、条件等模型字段的外部依据也必须保存为原件快照，不能将报价改写为普通字符串而免去绑定。没有正式报价仍可以研究估算：该字段应引用已在 `research.assumptions` 登记的 `estimate` / `design_choice` 的 `parameter_basis`，沿用取值、来源与推导审查；散装估算文字或未登记的同名对象不能代替它。用户同一条消息可以固定多个参数，模型引用按相关参数与实际合同锁核对，外部用途不能借此变成对话豁免。格式读写位于成果适配层，领域契约仅保存原件标识与定位描述；提取器的支持范围及定位有效性由原件重放检查落实。

@@ -3,12 +3,44 @@
 import argparse
 from copy import deepcopy
 from hashlib import sha256
+from io import BytesIO
 import json
 import math
 import shutil
 from pathlib import Path
 import subprocess
 import sys
+from xml.sax.saxutils import escape
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
+
+
+def synthetic_source_artifact(body, directory):
+    """Save a literal synthetic protocol as a real DOCX, without core imports."""
+    parts = {
+        "[Content_Types].xml": '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
+        "_rels/.rels": '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>',
+        "word/document.xml": '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            '<w:body><w:p><w:r><w:t xml:space="preserve">' + escape(body)
+            + '</w:t></w:r></w:p></w:body></w:document>',
+    }
+    stream = BytesIO()
+    with ZipFile(stream, "w") as archive:
+        for name, text in parts.items():
+            item = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            item.compress_type = ZIP_DEFLATED
+            archive.writestr(item, text.encode("utf-8"))
+    raw = stream.getvalue()
+    digest = sha256(raw).hexdigest()
+    relative = "synthetic-sources/" + digest + ".docx"
+    path = directory / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        path.write_bytes(raw)
+    return {"path": relative, "sha256": digest, "extractor": "docx-body/1",
+            "selector": {"start": 0, "end": 1}}
 
 
 def fixture_merge(base, patch):
@@ -69,16 +101,33 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     if any(out.iterdir()):
         parser.error("output must be empty")
-    source_evidence = assets / "examples/minimal_complete/evidence.json"
+    source_evidence = assets / "examples/three_stage/evidence.json"
     evidence_data = json.loads(source_evidence.read_text(encoding="utf-8"))
+    # Relocate saved originals alongside this run's evidence. Copy the original
+    # bytes, not a regenerated document from the snapshot being checked.
+    for entry in evidence_data["supporting"]:
+        value = entry.get("value")
+        artifact = value.get("artifact") if isinstance(value, dict) else None
+        if artifact:
+            relative = "synthetic-sources/" + artifact["sha256"] + Path(artifact["path"]).suffix
+            target = out / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes((source_evidence.parent / artifact["path"]).read_bytes())
+            artifact["path"] = relative
     for ident, method in (
         ("synthetic://payer", "Test payer covers all service, grant and terminal payments"),
         ("synthetic://receipt", "Synthetic fixed receipt independently specified by this test"),
+        ("synthetic://grant-use", "Synthetic capital funding agreement: grant use [1000, 0] wan; debt ratio basis total_investment."),
+        ("synthetic://cash", "Synthetic capital funding agreement: grant use [1000] wan; debt ratio basis after_grant."),
+        ("synthetic://half-year-periods", "Synthetic time agreement: January start, 1.5 construction years and 24.5 operating years; annual amounts are period totals."),
     ):
-        evidence_data["supporting"].append({"evidence_id": ident, "label": "Synthetic payment workpaper",
+        body = "Synthetic acceptance agreement only; not real project evidence or approval:\n" + method
+        evidence_data["supporting"].append({"evidence_id": ident, "label": "Synthetic contract agreement",
             "source": "synthetic://three-stage-acceptance", "as_of": "2026-01",
             "provided_by": "Synthetic test", "evidence_state": "unverified",
-            "value": {"type": "assumption_workpaper", "method": method}})
+            "value": {"type": "source_snapshot", "text": body, "sha256": sha256(body.encode()).hexdigest(),
+                "artifact": synthetic_source_artifact(body, out),
+                "citation": {"start": 0, "end": len(body), "text": body, "locator": "synthetic agreement"}}})
     evidence = out / "synthetic-evidence.json"
     evidence.write_text(json.dumps(evidence_data, ensure_ascii=False, indent=2), encoding="utf-8")
     contract = assets / "examples/three_stage/decision-contract.yaml"
@@ -128,6 +177,9 @@ def main():
     comparison = out / "comparison/scheme-comparison.json"
     data = json.loads(comparison.read_text(encoding="utf-8"))
     rows = {row["id"]: row for row in data["candidates"]}
+    assert data["research_review"]["source_artifact_review"]["passed"]
+    assert any(row["status"] == "artifact_reproduced"
+               for row in data["research_review"]["source_artifact_review"]["checks"])
     check_brief(comparison.parent, data)
 
     def attach_synthetic_research(spec, parameters):
@@ -197,6 +249,7 @@ def main():
         supporting.append({"evidence_id": source_id, "label": label, "source": source_id,
             "as_of": "2025-12-01", "provided_by": "Synthetic acceptance", "evidence_state": "unverified",
             "value": {"type": "source_snapshot", "text": body, "sha256": sha256(body.encode()).hexdigest(),
+                "artifact": synthetic_source_artifact(body, out),
                 "citation": {"start": 0, "end": len(body), "text": body, "locator": "synthetic fixture"},
                 "scope": {"authority": "source_rule", "parameter_paths": sorted(scope_paths)}}})
         assumptions = research["assumptions"]
@@ -511,6 +564,13 @@ def main():
     current_params = deepcopy(data["base_params"])
     save("current-case/input/project.json", current_params)
     save("current-case/input/evidence.json", json.loads(evidence.read_text(encoding="utf-8")))
+    for entry in evidence_data["supporting"]:
+        value = entry.get("value")
+        artifact = value.get("artifact") if isinstance(value, dict) else None
+        if artifact:
+            target = inputs / artifact["path"]
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(out / artifact["path"], target)
     save("current-case/input/decision-contract.json", data["decision_contract"])
     old_comparison = case / "comparisons/first/scheme-comparison.json"
     spec_path = save("current-case/input/scheme-set.json", data["scheme_set"])

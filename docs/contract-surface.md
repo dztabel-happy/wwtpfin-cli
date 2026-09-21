@@ -26,6 +26,8 @@ wwtp-fin schema --kind scheme-set
 
 ## 子命令
 
+`source-snapshot SOURCE --extractor docx-body/1|html-element/1` 列出可定位内容及截断预览；增加 `--selector JSON --evidence-dir DIR` 输出可直接用作 `supporting[].value` 的原文快照及原件绑定。它只读保存的文件，输出 JSON 到标准输出。选择器、相对路径和离线归档规则见 `docs/RESEARCH_REVIEW.md`。无法提取或定位不合法按参数错误返回 1。
+
 | 命令 | 输入 | 主要输出 |
 | --- | --- | --- |
 | `intake` | `-p` 不完整参数草稿，可选 `-o` | 缺参问题、建议条件与输入就绪状态；不自动填值。 |
