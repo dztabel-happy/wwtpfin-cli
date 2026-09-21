@@ -78,6 +78,130 @@
           "end": 123,
           "text": "本合成验收只比较同一服务边界内的既定报价或运行费用方案，其他服务、工程、税务和合同范围固定。此限定只适用于合成测试，不是实际项目研究授权或政策。所得税口径与所得减免固定，专用设备投资抵免不属于本合成报价变体；这不表示任何真实设备或项目不适用抵免。",
           "locator": "合成范围定义全文"
+        },
+        "scope": {
+          "authority": "source_rule",
+          "parameter_paths": [
+            "capital.assets.0.cost_wan",
+            "capital.assets.0.depreciable",
+            "capital.assets.0.investment_origin",
+            "capital.assets.0.kind",
+            "capital.assets.0.life_years",
+            "capital.assets.0.name",
+            "capital.assets.0.residual_rate",
+            "capital.assets.1.cost_wan",
+            "capital.assets.1.depreciable",
+            "capital.assets.1.investment_origin",
+            "capital.assets.1.kind",
+            "capital.assets.1.life_years",
+            "capital.assets.1.name",
+            "capital.assets.1.residual_rate",
+            "capital.assets.2.cost_wan",
+            "capital.assets.2.depreciable",
+            "capital.assets.2.investment_origin",
+            "capital.assets.2.kind",
+            "capital.assets.2.life_years",
+            "capital.assets.2.name",
+            "capital.assets.2.residual_rate",
+            "capital.assets.3.cost_wan",
+            "capital.assets.3.depreciable",
+            "capital.assets.3.investment_origin",
+            "capital.assets.3.kind",
+            "capital.assets.3.life_years",
+            "capital.assets.3.name",
+            "capital.assets.3.residual_rate",
+            "capital.replacement_assets.0.cost_wan",
+            "capital.replacement_assets.0.depreciable",
+            "capital.replacement_assets.0.kind",
+            "capital.replacement_assets.0.life_years",
+            "capital.replacement_assets.0.name",
+            "capital.replacement_assets.0.operation_year",
+            "capital.replacement_assets.0.purpose",
+            "capital.replacement_assets.0.purpose_basis",
+            "capital.replacement_assets.0.residual_rate",
+            "capital.replacement_assets.0.vat_basis",
+            "cit_mode",
+            "equity_ratio",
+            "financing_declaration",
+            "income_tax.equipment_credit",
+            "loan_tranches.0.annual_rate",
+            "loan_tranches.0.grace_years",
+            "loan_tranches.0.name",
+            "loan_tranches.0.repayment_method",
+            "loan_tranches.0.share",
+            "loan_tranches.0.term_years",
+            "loan_tranches.1.annual_rate",
+            "loan_tranches.1.grace_years",
+            "loan_tranches.1.name",
+            "loan_tranches.1.repayment_method",
+            "loan_tranches.1.share",
+            "loan_tranches.1.term_years",
+            "mode",
+            "operating_loan_tranches",
+            "opex_items.0.annual_growth_rate",
+            "opex_items.0.base_wan",
+            "opex_items.0.input_vat_rate",
+            "opex_items.0.name",
+            "opex_items.0.price_adj_group",
+            "opex_items.0.scales_with_volume",
+            "opex_items.0.vat_scope",
+            "opex_items.1.annual_growth_rate",
+            "opex_items.1.base_wan",
+            "opex_items.1.input_vat_rate",
+            "opex_items.1.name",
+            "opex_items.1.price_adj_group",
+            "opex_items.1.scales_with_volume",
+            "opex_items.1.vat_scope",
+            "opex_items.2.annual_growth_rate",
+            "opex_items.2.base_wan",
+            "opex_items.2.input_vat_rate",
+            "opex_items.2.name",
+            "opex_items.2.price_adj_group",
+            "opex_items.2.scales_with_volume",
+            "opex_items.2.vat_scope",
+            "opex_items.3.annual_amounts_wan.0",
+            "opex_items.3.annual_amounts_wan.1",
+            "opex_items.3.annual_amounts_wan.10",
+            "opex_items.3.annual_amounts_wan.11",
+            "opex_items.3.annual_amounts_wan.12",
+            "opex_items.3.annual_amounts_wan.13",
+            "opex_items.3.annual_amounts_wan.14",
+            "opex_items.3.annual_amounts_wan.15",
+            "opex_items.3.annual_amounts_wan.16",
+            "opex_items.3.annual_amounts_wan.17",
+            "opex_items.3.annual_amounts_wan.18",
+            "opex_items.3.annual_amounts_wan.19",
+            "opex_items.3.annual_amounts_wan.2",
+            "opex_items.3.annual_amounts_wan.20",
+            "opex_items.3.annual_amounts_wan.21",
+            "opex_items.3.annual_amounts_wan.22",
+            "opex_items.3.annual_amounts_wan.23",
+            "opex_items.3.annual_amounts_wan.24",
+            "opex_items.3.annual_amounts_wan.3",
+            "opex_items.3.annual_amounts_wan.4",
+            "opex_items.3.annual_amounts_wan.5",
+            "opex_items.3.annual_amounts_wan.6",
+            "opex_items.3.annual_amounts_wan.7",
+            "opex_items.3.annual_amounts_wan.8",
+            "opex_items.3.annual_amounts_wan.9",
+            "opex_items.3.annual_growth_rate",
+            "opex_items.3.base_wan",
+            "opex_items.3.input_vat_rate",
+            "opex_items.3.name",
+            "opex_items.3.price_adj_group",
+            "opex_items.3.scales_with_volume",
+            "opex_items.3.vat_scope",
+            "vat_method",
+            "vol_segments.0.m3d",
+            "vol_segments.0.year_from",
+            "vol_segments.0.year_to",
+            "vol_segments.1.m3d",
+            "vol_segments.1.year_from",
+            "vol_segments.1.year_to",
+            "vol_segments.2.m3d",
+            "vol_segments.2.year_from",
+            "vol_segments.2.year_to"
+          ]
         }
       }
     },
@@ -195,7 +319,8 @@
           ]
         },
         "source_refs": [
-          "synthetic://demand-range"
+          "synthetic://demand-range",
+          "synthetic://basis/volume/derivation"
         ],
         "method": "Literal synthetic fixture parameters; actual derivations belong in project workpapers",
         "uncertainty": "Exactly the numerical alternatives in this synthetic test protocol",
@@ -222,6 +347,129 @@
             },
             "candidate_overrides": {},
             "continuation_overrides": {}
+          }
+        },
+        "derivation": {
+          "inputs": {
+            "v0": {
+              "value": 18000,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v0",
+              "scenario_values": {
+                "lower_volume": 16200
+              }
+            },
+            "v1": {
+              "value": 1,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v1",
+              "scenario_values": {
+                "lower_volume": 1
+              }
+            },
+            "v2": {
+              "value": 1,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v2",
+              "scenario_values": {
+                "lower_volume": 1
+              }
+            },
+            "v3": {
+              "value": 24000,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v3",
+              "scenario_values": {
+                "lower_volume": 21600
+              }
+            },
+            "v4": {
+              "value": 2,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v4",
+              "scenario_values": {
+                "lower_volume": 2
+              }
+            },
+            "v5": {
+              "value": 2,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v5",
+              "scenario_values": {
+                "lower_volume": 2
+              }
+            },
+            "v6": {
+              "value": 28500,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v6",
+              "scenario_values": {
+                "lower_volume": 25650
+              }
+            },
+            "v7": {
+              "value": 3,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v7",
+              "scenario_values": {
+                "lower_volume": 3
+              }
+            },
+            "v8": {
+              "value": 25,
+              "unit": "synthetic fixture unit",
+              "evidence_ref": "synthetic://basis/volume/derivation",
+              "source_path": "value.values.v8",
+              "scenario_values": {
+                "lower_volume": 25
+              }
+            }
+          },
+          "outputs": {
+            "vol_segments.0.m3d": {
+              "formula": "v0",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.0.year_from": {
+              "formula": "v1",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.0.year_to": {
+              "formula": "v2",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.1.m3d": {
+              "formula": "v3",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.1.year_from": {
+              "formula": "v4",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.1.year_to": {
+              "formula": "v5",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.2.m3d": {
+              "formula": "v6",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.2.year_from": {
+              "formula": "v7",
+              "unit": "synthetic fixture unit"
+            },
+            "vol_segments.2.year_to": {
+              "formula": "v8",
+              "unit": "synthetic fixture unit"
+            }
           }
         }
       }
@@ -467,12 +715,64 @@
             "treated_basis": "demand",
             "billed_basis": "treated",
             "opex_basis": "treated"
-          }
+          },
+          "concession_years": 25,
+          "design_capacity_m3d": 30000,
+          "discount_rate": 0.06
         },
         "source_refs": [
           "synthetic://complete-research-fixture"
         ],
         "method": "Literal synthetic fixture parameters; actual derivations belong in project workpapers"
+      }
+    },
+    {
+      "evidence_id": "synthetic://basis/volume/derivation",
+      "label": "Literal synthetic alternatives",
+      "source": "synthetic://fixture",
+      "as_of": "2025-12-01",
+      "provided_by": "Unit fixture",
+      "evidence_state": "unverified",
+      "value": {
+        "type": "assumption_workpaper",
+        "values": {
+          "v0": [
+            18000,
+            16200
+          ],
+          "v1": [
+            1,
+            1
+          ],
+          "v2": [
+            1,
+            1
+          ],
+          "v3": [
+            24000,
+            21600
+          ],
+          "v4": [
+            2,
+            2
+          ],
+          "v5": [
+            2,
+            2
+          ],
+          "v6": [
+            28500,
+            25650
+          ],
+          "v7": [
+            3,
+            3
+          ],
+          "v8": [
+            25,
+            25
+          ]
+        }
       }
     }
   ]

@@ -57,6 +57,8 @@ Before drafting or delivering an interactive case report, run `wwtp-fin case sta
 
 ## Deliverables
 
+For a selected scheme, read the run-root `decision-brief.md/json` alongside the verified deliverable. Preserve its recommendation versus user-choice distinction, goal order, conditional branches, nominal/present-value and period labels. Cite the selected run's computed figures; do not independently rank alternatives in the manuscript or use a different combination's savings as the selected fallback. This summary does not waive source, engineering or policy review.
+
 ```text
 exports/run-NNNN/report/
   report-plan.json             # module + artifact routing ledger

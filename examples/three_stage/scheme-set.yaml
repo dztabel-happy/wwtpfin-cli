@@ -161,8 +161,8 @@ research:
     - loan_tranches
     - operating_loan_tranches
     - financing_declaration
-    basis: This synthetic fixture fixes the funding terms while comparing quoted payments; real projects must research
-      alternatives.
+    basis: This synthetic fixture fixes the funding terms while comparing quoted payments;
+      real projects must research alternatives.
     evidence_refs:
     - synthetic://fixed-scope
     exclusion:
@@ -196,8 +196,11 @@ research:
     - calculation_basis
     - capital
     - cit_mode
+    - concession_years
     - days_per_year
     - debt_ratio
+    - design_capacity_m3d
+    - discount_rate
     - dividend_payout_ratio
     - dscr_include_short_term
     - enable_working_capital_loan

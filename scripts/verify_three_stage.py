@@ -4,10 +4,59 @@ import argparse
 from copy import deepcopy
 from hashlib import sha256
 import json
+import math
 import shutil
 from pathlib import Path
 import subprocess
 import sys
+
+
+def fixture_merge(base, patch):
+    """The synthetic JSON protocol merges objects and replaces arrays/scalars."""
+    result = deepcopy(base)
+    for key, value in patch.items():
+        result[key] = (fixture_merge(result[key], value)
+                       if isinstance(result.get(key), dict) and isinstance(value, dict)
+                       else deepcopy(value))
+    return result
+
+
+def fixture_value(model, path):
+    for part in path.split("."):
+        model = model[int(part)] if isinstance(model, list) else model[part]
+    return deepcopy(model)
+
+
+def fixture_leaves(value, path=""):
+    """Retain empty containers as explicit leaves, including absent mechanisms."""
+    items = value.items() if isinstance(value, dict) else (
+        enumerate(value) if isinstance(value, list) else ())
+    result = {}
+    for key, child in items:
+        result.update(fixture_leaves(child, path + "." + str(key) if path else str(key)))
+    return result or {path: value}
+
+
+def synthetic_derivation(packet, supporting, ident, base, scenarios):
+    """Literal test-protocol variables; never a derivation for real project data."""
+    inputs, outputs, values = {}, {}, {}
+    numbers = {path: amount for path, amount in fixture_leaves(packet["baseline_values"]).items()
+               if type(amount) in (int, float) and math.isfinite(amount)}
+    for index, (path, amount) in enumerate(sorted(numbers.items())):
+        name = "v%d" % index
+        variations = {key: fixture_value(fixture_merge(base, case["overrides"]), path)
+                      for key, case in scenarios.items()}
+        values[name] = [amount, *variations.values()]
+        inputs[name] = {"value": amount, "unit": "synthetic fixture unit",
+            "evidence_ref": ident, "source_path": "value.values." + name,
+            "scenario_values": variations}
+        outputs[path] = {"formula": name, "unit": "synthetic fixture unit"}
+    if numbers:
+        supporting.append({"evidence_id": ident, "label": "Literal synthetic alternatives",
+            "source": ident, "as_of": "2025-12-01", "provided_by": "Synthetic acceptance",
+            "evidence_state": "unverified", "value": {"type": "assumption_workpaper", "values": values}})
+        packet["source_refs"].append(ident)
+        packet["derivation"] = {"inputs": inputs, "outputs": outputs}
 
 
 def main():
@@ -49,12 +98,37 @@ def main():
             assert error_contains in result.stderr, result.stderr
         return result.stdout
 
+    def check_brief(root, compared, selected=None, result=None):
+        brief = json.loads((root / "decision-brief.json").read_text(encoding="utf-8"))
+        assert brief["schema"] == "wwtp-fin/decision-brief/1"
+        assert (root / "decision-brief.md").read_text(encoding="utf-8").strip()
+        digest = sha256(json.dumps(compared, ensure_ascii=False, sort_keys=True,
+            separators=(",", ":"), allow_nan=False).encode("utf-8")).hexdigest()
+        assert brief["sources"]["comparison_sha256"] == digest
+        ready = (compared["research_review"]["ready_for_selection"]
+                 and compared["decision_review"]["passed"])
+        expected = compared["research_review"]["recommended_candidates"] if ready else []
+        assert brief["recommendation"]["candidate_ids"] == expected
+        if selected is not None:
+            assert brief["selection"]["candidate_id"] == selected
+            relation = ("no_computed_recommendation" if not expected else
+                        "matches_computed_recommendation" if selected in expected else
+                        "different_from_computed_recommendation")
+            assert brief["selection"]["recommendation_relation"] == relation
+        if result is not None:
+            vat = {row["id"]: row for row in brief["vat"]}
+            assert vat["total_vat_input_wan"]["value"] == result["scalars"]["total_vat_input_wan"]
+            assert vat["vat_credit_end_wan"]["value"] == result["series"]["VAT_CREDIT_END"][-1]
+            assert vat["vat_credit_end_wan"]["measure"] == "closing_balance"
+        return brief
+
     run("compare", "-p", assets / "examples/minimal_complete/project.yaml",
         "--evidence", evidence, "--contract", contract,
         "--schemes", assets / "examples/three_stage/scheme-set.yaml", "-o", out / "comparison")
     comparison = out / "comparison/scheme-comparison.json"
     data = json.loads(comparison.read_text(encoding="utf-8"))
     rows = {row["id"]: row for row in data["candidates"]}
+    check_brief(comparison.parent, data)
 
     def attach_synthetic_research(spec, parameters):
         """Adapt the bounded synthetic research when the acceptance fixture changes.
@@ -69,7 +143,7 @@ def main():
                 # The cash-only variant has no operating cost items; other
                 # synthetic variants explicitly fix their actual item list.
                 direction["paths"] = ["opex_items.%d" % index
-                                      for index in range(len(parameters["opex_items"]))]
+                                      for index in range(len(parameters["opex_items"]))] or ["opex_items"]
             if direction["status"] == "evaluated":
                 direction.update(candidate_ids=ids, paths=paths)
             elif "exclusion" in direction:
@@ -95,28 +169,46 @@ def main():
             "--no-sensitivity", "--no-boundaries", "--no-tables", "--compact"))["params"]
         fixture_evidence = deepcopy(evidence_data)
         source_id = "synthetic://fixture/" + label
-        body = "Literal synthetic acceptance protocol, not real project facts:\n" + json.dumps(normalized, sort_keys=True)
+        # Only this fully synthetic protocol authorizes fixed domain boundaries.
+        # Cite its current base/candidates/scenarios, never a previous fixture's scope.
+        models = [normalized] + [fixture_merge(normalized, row["overrides"])
+                                 for row in spec["candidates"]]
+        scope_paths = set()
+        for direction in research["directions"]:
+            direction["evidence_refs"] = [source_id]
+            if direction["status"] in ("excluded", "not_applicable"):
+                for path in direction["paths"]:
+                    leaves = set()
+                    for model in models:
+                        try:
+                            leaves.update(fixture_leaves(fixture_value(model, path), path))
+                        except (KeyError, IndexError, TypeError):
+                            pass
+                    scope_paths.update(leaves or {path})
+        for scenario in research["scenarios"]:
+            scenario["evidence_refs"] = [source_id]
+        protocol = {"base": normalized, "candidates": spec["candidates"],
+                    "scenarios": research["scenarios"], "excluded_parameter_paths": sorted(scope_paths)}
+        body = ("Literal synthetic acceptance protocol, not real project facts. "
+                "Only this test fixes the listed excluded parameter boundaries across its proposals; "
+                "real projects require independent source and alternatives research:\n"
+                + json.dumps(protocol, ensure_ascii=False, sort_keys=True))
         supporting = fixture_evidence["supporting"]
         supporting.append({"evidence_id": source_id, "label": label, "source": source_id,
             "as_of": "2025-12-01", "provided_by": "Synthetic acceptance", "evidence_state": "unverified",
             "value": {"type": "source_snapshot", "text": body, "sha256": sha256(body.encode()).hexdigest(),
-                "citation": {"start": 0, "end": len(body), "text": body, "locator": "synthetic fixture"}}})
+                "citation": {"start": 0, "end": len(body), "text": body, "locator": "synthetic fixture"},
+                "scope": {"authority": "source_rule", "parameter_paths": sorted(scope_paths)}}})
         assumptions = research["assumptions"]
         declared = {path for item in assumptions if item["id"] != "synthetic-fixed-inputs" for path in item["paths"]}
         fixed = next(item for item in assumptions if item["id"] == "synthetic-fixed-inputs")
         fixed["paths"] = sorted(key for key in normalized if key not in declared)
         scenarios = {item["id"]: item for item in research["scenarios"]}
 
-        def value(path):
-            current = normalized
-            for part in path.split("."):
-                current = current[int(part)] if isinstance(current, list) else current[part]
-            return deepcopy(current)
-
         for item in assumptions:
             ident = source_id + "/" + item["id"]
             packet = {"type": "parameter_basis", "kind": item["kind"],
-                "baseline_values": {path: value(path) for path in item["paths"]},
+                "baseline_values": {path: fixture_value(normalized, path) for path in item["paths"]},
                 "source_refs": [source_id], "method": "Literal values and alternatives of this synthetic protocol"}
             if item["kind"] == "estimate":
                 packet.update(uncertainty="Synthetic protocol specifies the following alternative values",
@@ -124,6 +216,8 @@ def main():
                         "candidate_overrides": {i: v["overrides"] for i, v in scenarios[key].get("candidate_overrides", {}).items()},
                         "continuation_overrides": {i: v["overrides"] for i, v in scenarios[key].get("continuation_overrides", {}).items()}}
                         for key in item["scenario_ids"]})
+                synthetic_derivation(packet, supporting, ident + "/derivation", normalized,
+                    {key: scenarios[key] for key in item["scenario_ids"]})
             supporting.append({"evidence_id": ident, "label": item["id"], "source": source_id,
                 "as_of": "2025-12-01", "provided_by": "Synthetic acceptance", "evidence_state": "unverified", "value": packet})
             item["evidence_refs"] = [ident]
@@ -148,6 +242,7 @@ def main():
     assert payload["tables"] and "decision_boundaries" in payload["analysis"]
     assert payload["costs"]["schema"] == "wwtp-fin/cost-perspectives/1"
     assert payload["scalars"]["payer_net_outflow_wan"] is None
+    check_brief(final, data, "complete", payload)
     run("finalize", "--comparison", comparison, "--selection", selection,
         "--contract", contract, "--evidence", evidence, "-o", final, expect=1)
 
@@ -238,6 +333,12 @@ def main():
     run("compare", "-p", payer_params, "--contract", save("cost-contract.json", changed_contract),
         "--evidence", cost_evidence, "--schemes", save("cost-schemes.json", changed_spec), "-o", out / "cost-comparison")
     costs = json.loads((out / "cost-comparison/scheme-comparison.json").read_text(encoding="utf-8"))
+    assert costs["research_review"]["ready_for_selection"]
+    cost_brief = check_brief(out / "cost-comparison", costs)
+    for summary in cost_brief["costs"]:
+        if summary["period_scope"] == "common_service_period":
+            calculated = next(row for row in costs["candidates"] if row["id"] == summary["candidate_id"])["cost_comparison"]
+            assert (summary["nominal_wan"], summary["npv_wan"]) == (calculated["nominal_wan"], calculated["npv_wan"])
     assert costs["selectable_shortlist"] == ["maintain", "lower_price"]
     assert abs(costs["candidates"][1]["objective_value"] - costs["candidates"][0]["objective_value"] - 745.4125) < 1e-7
     subprocess.run([sys.executable, str(helper), str(out / "cost-comparison/scheme-comparison.json"),
@@ -249,6 +350,7 @@ def main():
         "--evidence", cost_evidence, "-o", out / "cost-final")
     run("verify-final-run", out / "cost-final")
     cost_final = json.loads((out / "cost-final/deliverable/result.json").read_text(encoding="utf-8"))
+    check_brief(out / "cost-final", costs, "lower_price", cost_final)
     assert cost_final["scalars"]["payer_net_outflow_wan"] == costs["candidates"][1]["objective_value"]
     assert "payer_cashflows" in cost_final["tables"]
     assert "construction_funding" in cost_final["tables"]
@@ -326,6 +428,7 @@ def main():
         "-o", out / "cash-comparison")
     cash_comparison = out / "cash-comparison/scheme-comparison.json"
     cash = json.loads(cash_comparison.read_text(encoding="utf-8"))
+    assert cash["research_review"]["ready_for_selection"]
     assert cash["selectable_shortlist"] == ["cash_pass"]
     bad = cash["candidates"][0]
     assert abs(bad["metrics"]["dscr_min"] - 1.5) < 1e-9
@@ -380,6 +483,7 @@ def main():
         "-o", out / "fractional-comparison")
     fractional_comparison = out / "fractional-comparison/scheme-comparison.json"
     compared = json.loads(fractional_comparison.read_text(encoding="utf-8"))
+    assert compared["research_review"]["ready_for_selection"]
     assert compared["selectable_shortlist"] == ["complete", "higher_quote"]
     subprocess.run([sys.executable, str(helper), str(fractional_comparison), "complete",
         str(out / "fractional-selection.json"), "--confirmed-by", "synthetic acceptance",
@@ -500,7 +604,8 @@ def main():
           "immutable output, payer ledger, incomplete coverage, misleading price proxy, grant funding, "
           "operating capex classification, cash gaps, cash/book bridge, cash solve, selected constraints "
           "refund accounting/tax separation fractional-time selected full run, current-case invalidation, "
-          "external-output source gate, report source gate and explicit historical preservation")
+          "external-output source gate, report source gate and explicit historical preservation, "
+          "current synthetic derivations and leaf scopes, bound decision briefs with nominal/PV and VAT balance figures")
 
 
 if __name__ == "__main__":

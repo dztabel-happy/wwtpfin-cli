@@ -37,7 +37,7 @@ wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml -
 
 四类条目的 `evidence_refs` 均须唯一解析到本次绑定 `evidence.supporting[].evidence_id`。只写一个文件名、URL或不存在的编号不等于登记证据；先把实际原文、估算底稿或计算记录放入 supporting，再引用其 ID。缺失、重复或仅在 unresolved 中的引用使 `research_evidence_review.passed=false`，保留计算而阻止收口。普通估算可继续标为 `unverified`，不要求伪装成已核验事实，也不要求全部材料使用下述严格来源快照。引用可解析不证明原文理解、估算方法或政策适用正确。
 
-`user_bound: true` 只用于用户实际固定的设计选择；其全部关联路径和值必须同时由决策合同 `fixed_parameters` 覆盖，基准与候选保持相同。产品验证合同与研究是否一致，不认证录入者声称的用户确认真实；用户的原话及来源仍须保留。
+`user_bound: true` 只用于用户实际固定的设计选择；其全部关联路径和值必须同时由决策合同 `fixed_parameters` 覆盖，基准与候选保持相同。完整成本决策还要求该项引用的用户原话快照逐叶登记 `scope.parameter_values`，见下文。合同中锁定同值只保证比较边界，不自动免除取值分类和方案研究。
 
 ### 方向及措施
 
@@ -70,6 +70,12 @@ wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml -
 | `exceptions` | 相关允许安排、例外和处理说明；没有适用例外也须说明核查结果。 |
 
 新增候选会改变方向排除的范围，不能静默继承旧判断。范围字段只是机械核对范围声明，不能使过宽的解释变得成立。一个来源只限制某种融资或实施安排时，不能直接排除同名政策或模式的全部变体。
+
+完整成本决策的方向排除还核对 `source_snapshot.value.scope`。`authority` 为 `source_rule` 或 `user_requirement`；`parameter_paths` 列出原文实际限制的参数叶路径，`parameter_values` 逐叶记录用户明确固定的参数值，`contract_values` 单独记录评价合同的要求。三个字段至少一个非空；非空对象、数组须逐叶登记，不能用一个父路径声称全部子项已被来源排除。方向中的父路径会按基准和候选展开，再逐一检查来源范围。尚未配置、但研究清单触发的机制直接登记其完整机制路径。
+
+例如用户只要求“共同评价30年，采用3.5%折现率”，快照可记录 `scope: {authority: user_requirement, contract_values: {cost_goal.horizon_years: 30, cost_goal.discount_rate: 0.035}, parameter_values: {discount_rate: 0.035}}`。这不包含 `concession_years`、续期或期末处理方式，因此不能据此停止期限及交接安排研究。每项 `user_bound` 必须引用真正约束它的用户快照（可通过该项 `parameter_basis.source_refs`），不能借另一项的引用补足。
+
+`research_review.scope_constraints_review` 核对当前引用、参数范围和值；`verified_fixed_parameters` 仅列有用户来源且与合同、基准、候选同值的精确叶路径。其余输入继续需要事实、估算或设计分类，不能仅写入 `fixed_parameters` 绕过。程序不认证登记者对原话的解释：原文只说30年时，擅自将27.5年合同写进用户范围仍是错误登记，需要专业审查。
 
 `exclusion` 沿用该方向或组合的 `evidence_refs`，其中每项都必须解析到 `evidence.supporting[]` 的来源快照；不能混入只有标题或未取得正文的所谓支持证据。普通推理写在 `basis`，所依赖的工程、合同原文也可以登记快照。支持排除的记录使用 `value.type: source_snapshot`：`text` 是保存的连续完整来源正文，`sha256` 是该正文 UTF-8 字节的 SHA256；`citation` 包含 `start`、`end`、`text` 和 `locator`。引文区间按 Python Unicode 码点计数、左闭右开，`citation.text` 必须等于正文的精确切片，定位说明为条款、页段或表格位置。原有 `source`、`as_of` 等元数据保留在 supporting 记录外层。排除证据须有非空来源定位，以及按来源实际精度填写的 `YYYY-MM` 或 `YYYY-MM-DD` 日期；不能用抓取日冒充文件生效日。
 
@@ -113,6 +119,7 @@ print(json.dumps(value, ensure_ascii=False, indent=2))
 | `method` | 取值、单位换算和来源解释方法，不能仅重复文件名。 |
 | `uncertainty` | 估算必须说明合理范围或不同推导方法；事实和设计选择可选。 |
 | `scenario_values` | 估算必须绑定所有关联情景的真实取值，格式见下文；改变范围需要修改依据并重新比较。 |
+| `derivation` | 数值估算的可复算底稿；来源数值、单位、限定算术式和目标参数路径，基准及关联共同情景均须吻合。 |
 
 `baseline_values` 必须覆盖该假设全部 `paths`，值与本轮基准严格一致；显式完整父对象可以覆盖其子路径，几个叶值不能代表未完整绑定的父对象。不要使用四舍五入的展示值、旧 run 值或研究模型指纹替代规范输入。改了基准就重建依据绑定；续期值来自当前 `base_continuation.params`，不是从另一候选随意取值。事实的 `source_refs` 沿用上述来源快照的原文、哈希、精确引文、定位与日期要求。
 
@@ -120,11 +127,46 @@ print(json.dumps(value, ensure_ascii=False, indent=2))
 
 `material` 保留为研究者的优先级标记，不再豁免研究。所有已登记估算均须行使应用到全部候选的有效情景；可以在同一情景中检验有关联的多个估算，不要求逐字段单开任务。设计选择均须通过实际候选或情景比较；只有用户明确固定且合同绑定路径和值时，才可以 `user_bound: true` 免除变体。不得通过删掉整条假设逃避检查：完整决策另有基于模型的关键输入覆盖检查。
 
+### 可复算的数值估算
+
+完整成本决策的数值估算必须提供 `parameter_basis.derivation`。`inputs` 是有来源定位的变量；每项包含 `value`、`unit`、`evidence_ref`、`source_path`。来源须在本依据的 `source_refs` 中且已取得；`source_path` 定位该证据记录的 `value` 内数值或数值数组。文字来源另给原文 `quote`，必须在该位置精确出现，其数值与变量一致。`5.65万`以数值5.65登记，单位换算明确写入公式，不默改为65000。
+
+`outputs` 按点路径覆盖 `baseline_values` 中全部数值叶子；每项包含 `formula`、`unit`，可选 `digits`（0至10位舍入）。公式仅允许登记变量、常数、`+ - * / **` 和 `min/max/ceil/floor`，必须实际引用来源变量；不执行Python脚本、任意函数或外部文件。纯参数赋值可用一个来源变量直接作为公式，不能直接把目标数写成无来源常数式。
+
+例如以下为单个金额路径的底稿片段，实际项目还需分类登记其他关联参数：
+
+```yaml
+baseline_values:
+  opex_items.0.base_wan: 360
+derivation:
+  inputs:
+    staff:
+      value: 30
+      unit: 人
+      evidence_ref: staff-workpaper
+      source_path: value.staff
+    wage:
+      value: 12
+      unit: 万元/人年
+      evidence_ref: wage-workpaper
+      source_path: value.tested_wages
+      scenario_values: {wage_high: 15}
+  outputs:
+    opex_items.0.base_wan:
+      formula: staff * wage
+      unit: 万元/年
+      digits: 2
+```
+
+例中来源应实际登记人数30、研究工资数组`[12,15]`；高工资共同情景的金额必须为450。每个输入的可选 `scenario_values` 按已关联情景替换该变量，未替换者保持基准。同一公式复算基准及所有关联共同情景，不能只更新目标金额而沿用过期的推导来源。已有 `parameter_basis.scenario_values` 仍绑定完整情景，二者分别核对实际研究范围和估算算术。
+
+`research_review.estimate_derivation_review` 保留逐项公式、计算值、实际输入值及差异。其通过只代表数值定位和计算链成立；不证明所选引文真实、单位解释正确、估算方法适合项目或范围充分。不同合理方法需要各自有据的底稿和比较，不能为一致性硬取同一个中值。对可研预测、经验泥产率、寿命等研究估计，应保留这一性质；不得改称事实规避核对。
+
 ### 模型自动产生的研究清单
 
 完整合法输入的 `intake` 输出 `research_plan`，列出需分类绑定的关键输入与本项目触发的具体研究事项。完整降本比较的 `research_review.plan_review` 同时检查基准、候选和续期中新出现的事项。先读清单再组织研究，不让业务人员自行列财务字段。
 
-`basis_paths` 中的输入须被假设的 `paths` 覆盖并绑定当前值，或属于决策合同已经固定的路径。已有完整父对象可覆盖子项。日期、范围、估算和设计提案按实际性质登记，不能为了省事把混合对象全部称为事实。
+`basis_paths` 中的输入须被假设的 `paths` 覆盖并绑定当前值，或在来源范围复核中逐叶确认属于用户固定参数。已有完整父对象可分类覆盖子项，但几项固定叶子不能豁免整个父对象。日期、范围、估算和设计提案按实际性质登记，不能为了省事把混合对象全部称为事实。
 
 具体研究事项包括投资与更新分别处置、每项运营成本、适用的增值税与所得税事项、资本结构及付款安排。一个领域做过一项试算不代表该领域全部事项完成。`evaluated` 的方向须对该事项相关路径产生真实参数变化；不能只改旁边另一项成本。新增对象或数组项按实际变化的子路径计入，不能用一个父路径变化声称邻近机制也已研究。
 
@@ -195,6 +237,10 @@ CLI 自动检查所有已测情景赢家与剩余已研究单项的组合处置�
 `decision_review` 核对成本目标与三类要求的真实引用，并列出候选条件、续期依据及付款方收支引用审查。条件声明为 `satisfied` 或 `not_applicable` 时不能引用不存在、重复或仅在 unresolved 的证据；付款方收支与续期也不能只填一个虚构编号。共同情景按重算后的实际付款方收支引用再次检查，不能在情景新增无依据收入绕过基准核验。坏引用的候选失去选择资格；若原推荐依赖该候选，或共同情景收支引用未通过，推荐收口会被撤回。普通估算登记为 `unverified` 和未落实条件为 `pending` 是诚实的条件研究，不等于缺失的 ID 可以通过。CLI 只确认记录可解析，不认证引用内容足以证明结论。
 
 ## 选择与成果如何保留结论边界
+
+`compare` 同时生成 `decision-brief.json` 和 `decision-brief.md`，直接承接已经计算并绑定的主次目标、数值首组、研究建议、并列和条件分支，不另行排序。研究或决策核验未通过时摘要明确为探索，不能把保留的数值首组称为正式推荐。向用户说明建议应以这份产物为数值底稿；如要优先考虑另一个目标，明确变更决策合同并重算，或解释用户选择的不同取舍。
+
+`finalize` 在选定运行根目录生成同名摘要，区分计算建议与用户实际选择；成本名义额、现值、共同服务期与原合同、增值税发生额与期末留抵分别标注。摘要引用比较、选择和完整计算结果哈希，并纳入 `final-run.json`；`verify-final-run` 重建核对，不允许改摘要来改写排序或混用另一运行数字。它是可直接引用的确定性底稿，不是对任意自由文字报告的语义认证。
 
 向用户说明推荐理由、采用与不采用的影响、重要条件失效的结果以及会翻转排序的假设。不要让用户靠查看原始 JSON 才发现这些限制。可以选择条件方案，也可以基于明确取舍选择非共同赢家；选择记录保留 `decision_reason` 和 `acknowledged_research_status`，说明所作的决定，不能抹去翻转或将自选包装成稳健最优。
 
