@@ -65,6 +65,11 @@ def main():
         ids = [row["id"] for row in spec["candidates"]]
         paths = sorted({key for row in spec["candidates"] for key in row["overrides"]})
         for direction in research["directions"]:
+            if direction["domain"] == "operations" and direction["status"] != "evaluated":
+                # The cash-only variant has no operating cost items; other
+                # synthetic variants explicitly fix their actual item list.
+                direction["paths"] = ["opex_items.%d" % index
+                                      for index in range(len(parameters["opex_items"]))]
             if direction["status"] == "evaluated":
                 direction.update(candidate_ids=ids, paths=paths)
             elif "exclusion" in direction:
