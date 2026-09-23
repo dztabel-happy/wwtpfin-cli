@@ -15,7 +15,7 @@ The user supplies materials, goals and feedback. Within one continuing case, act
 ## Start or resume
 
 - Resolve the active CLI's asset root: the source checkout when developing, otherwise the active `@dztabel/wwtpfin` installation. Use its skills, schemas, docs and examples together; a same-name global skill may be stale. Relative documentation paths below are under that root.
-- Create or reuse a case workspace; copy originals into `sources/`. Use [workspace management](references/workspace.md) for current input, immutable rounds and exports. Run `case status` on resumption and before presenting a current result.
+- Create or reuse a case workspace; copy originals into `sources/`. Use [workspace management](references/workspace.md) for current input, immutable rounds and exports. Run `case status` on resumption. Before presenting a selected result, `verify-final-run RUN --case CASE` also checks currentness and refreshes `CURRENT.md`; its successful check covers the unchanged handoff.
 - Read command help and relevant schemas when constructing inputs; consult the matching reference for a specific modeling or review issue. `examples/minimal_complete/` and `examples/three_stage/` show shapes, not project facts or recommended assumptions.
 
 ## Three reversible stages

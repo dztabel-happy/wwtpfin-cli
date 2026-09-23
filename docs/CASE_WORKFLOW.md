@@ -70,7 +70,7 @@ wwtp-fin case checkpoint CASE --stage 3 --message CASE/responses/user-selected.m
 wwtp-fin verify-final-run CASE/runs/run-0002 --case CASE
 ```
 
-带 `--case` 的验证还要求该运行仍是当前选定成果。Word或图表交付前要做这道检查；报告编写期间的新信息若影响计算或推荐，应先返回建模和比较，不能修改已验证旧成果或把旧表继续混入新报告。
+带 `--case` 的验证包括成果包完整性、当前选定成果检查及 `CURRENT.md` 刷新。同一次未变更交付可直接使用这次成功结果，无须再分别运行 `case status` 和 `verify-deliverable`。Word或图表交付前要做这道检查；报告编写期间的新信息若影响计算或推荐，应先返回建模和比较，不能修改已验证旧成果或把旧表继续混入新报告。
 
 `input/` 的当前性绑定包括底稿和新增文件。`finalize` 后新写说明生成脚本到 `input/workpapers/`，即使没改参数也会使选定成果过期；纯展示工作应写入 `exports/run-NNNN/`。若只是新建的导出文件误放，可将这些文件移出到导出目录、恢复原绑定输入树，再重新核验当前性，不必为整理文件重做财务测算。真实的新依据、参数或决策变化不能按文件误放处理，也不能绕过哈希校验。
 
