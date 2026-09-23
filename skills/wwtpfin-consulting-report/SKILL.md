@@ -19,6 +19,8 @@ Put the manuscript under `exports/run-NNNN/report/` and scripts under its siblin
 
 For continuation service, read the common-period cost ledger and both separately calculated deliverables. Preserve each contract's financial scope and the combined cost horizon. The run's final verification binds the combined package.
 
+Read the modeling workpaper alongside decisive cost and cash-flow schedules before writing the recommendation. Verify that the explanation's actions, timing, duration and associated payments appear in the selected calculation. Keep alternative cost perspectives as explicitly named tradeoffs; they do not invalidate or replace the bound primary objective. A mismatch requires a return to the core workflow and a new calculation, not an independent report-side adjustment.
+
 ## Compile the report
 
 1. Inventory every block in `document.json`, every entry in `tables/index.json` and `figures/index.json`, and every warning, unresolved item and required user input.

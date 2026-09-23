@@ -18,6 +18,8 @@ Use `intake.research_plan` and comparison `plan_review` for actual model exposur
 
 For an influential assumption, distinguish amount uncertainty from method uncertainty. Apply common conditions consistently to candidates; recompute dependent engineering quantities. A genuine alternate method needs its own values and rationale. Keep untested ideas and missing evidence visible in the recommendation.
 
+Translate a measure over the whole service period, including when its effect starts, changes and ends and any maintenance, replacement or fallback expenditure. Use the CLI's actual time axis and inspect the affected cost/quantity series around these transitions. A descriptive or effect ledger may not modify financial inputs: check the relevant field contract and avoid either omitting the cash effect or counting it twice. Keep this derivation in the existing modeling workpaper, not a separate checklist.
+
 The financial model supports four responses to a proposed mechanism:
 - Express it directly and calculate it.
 - First derive engineering/tax inputs in a sourced upstream workpaper.
@@ -53,6 +55,8 @@ Read `decision-brief.md/json`, numerical constraints, `model_eligibility`, decis
 Use `ranking_explanation` to distinguish the strict primary-cost result from the result under the registered tolerance and secondary goals. Explain the accepted cost difference and basis for the rule; the diagnostic does not silently change the objective. A reversal under plausible assumptions requires a conditional branch, tie or evidence-gathering recommendation.
 
 Stop when the advice is sufficiently supported within its disclosed scope, not after a fixed number of trials or a green check. Explain why recommended, why alternatives were not adopted, what changes the choice and what happens if a key condition fails. An open opportunity that could change the recommendation warrants further work.
+
+Before asking the user to choose, review the decisive claims backwards: result and period ledger → effective inputs → derivation → source and applicability. Check the recommendation and the strongest rejected alternative, including any objective tradeoff. Numerical agreement is not independent proof of the assumed source meaning. Fix unsupported or unimplemented claims through revised inputs and a new comparison; keep unresolved judgments conditional. This is the agent's professional review, not a new CLI certification or a required number of trials.
 
 ## Selected result
 

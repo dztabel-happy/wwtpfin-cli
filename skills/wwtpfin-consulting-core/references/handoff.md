@@ -6,6 +6,8 @@ Invoke `wwtpfin-consulting-report` first. It inventories the complete run and so
 
 Pass the bound `cost_goal`, `decision_review` and `research_review` with the selected result. The report must use the actual cost perspective and common service period, retain service/compliance/return requirements and distinguish evidence-backed conditions from implementation approval. A saving against a conditional baseline must retain that baseline's provenance; do not relabel it as the source document's own measured total.
 
+Pass the existing modeling workpaper's derivation of decisive savings and unresolved judgments as well. Before drafting, reconcile the proposed explanation with the selected run's period ledgers and effective inputs. Verification binds the supplied model; it does not prove that a described measure was implemented in that model. If an effect, duration or related payment is missing, return to research and recompute instead of repairing only the prose.
+
 For continuation service, hand over the original `deliverable/`, separate `continuation-deliverable/`, and `cost-comparison.json` / `cost-cashflows.csv` from the same verified run. The combined ledger keeps both contracts' actual timing and terminal obligations. Each contract's financial and cash results remain separate; continuation evidence and declared indicators must not be borrowed from the original contract. `verify-final-run` binds the whole set; a report-plan check of one package is not a substitute for that verification.
 
 ## ChartKit
