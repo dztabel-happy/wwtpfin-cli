@@ -826,6 +826,63 @@
           ]
         }
       }
+    },
+    {
+      "evidence_id": "synthetic://candidate-basis/cash_gap",
+      "label": "合成示例的明确报价提案",
+      "source": "synthetic://workflow",
+      "as_of": "2025-12-01",
+      "provided_by": "Synthetic fixture",
+      "evidence_state": "unverified",
+      "value": {
+        "type": "parameter_basis",
+        "kind": "design_choice",
+        "baseline_values": {
+          "tariff_blended_gross": 0.01
+        },
+        "method": "本示例明确提出的研究报价；不代表外部报价或已批准收费。",
+        "source_refs": [
+          "synthetic://exclusive-prices"
+        ]
+      }
+    },
+    {
+      "evidence_id": "synthetic://candidate-basis/conditional",
+      "label": "合成示例的明确报价提案",
+      "source": "synthetic://workflow",
+      "as_of": "2025-12-01",
+      "provided_by": "Synthetic fixture",
+      "evidence_state": "unverified",
+      "value": {
+        "type": "parameter_basis",
+        "kind": "design_choice",
+        "baseline_values": {
+          "tariff_blended_gross": 3.5
+        },
+        "method": "本示例明确提出的研究报价；不代表外部报价或已批准收费。",
+        "source_refs": [
+          "synthetic://exclusive-prices"
+        ]
+      }
+    },
+    {
+      "evidence_id": "synthetic://candidate-basis/complete",
+      "label": "合成示例的明确报价提案",
+      "source": "synthetic://workflow",
+      "as_of": "2025-12-01",
+      "provided_by": "Synthetic fixture",
+      "evidence_state": "unverified",
+      "value": {
+        "type": "parameter_basis",
+        "kind": "design_choice",
+        "baseline_values": {
+          "tariff_blended_gross": 4.0
+        },
+        "method": "本示例明确提出的研究报价；不代表外部报价或已批准收费。",
+        "source_refs": [
+          "synthetic://exclusive-prices"
+        ]
+      }
     }
   ]
 }

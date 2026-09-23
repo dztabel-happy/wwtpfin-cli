@@ -1,5 +1,11 @@
 # Modeling, measures and selected results
 
+## Bind candidate changes to their actual bases
+
+For a complete cost decision, use `research.candidate_bases` entries (`id`, `candidate_ids`, `evidence_refs`) to bind changed candidate and combination values to existing `parameter_basis` records. In these records, `baseline_values` means the named candidates' values in the baseline scenario. Unchanged parameters inherit the common baseline evidence; several candidates may share a record only when its values and applicable scenarios genuinely match. Read `candidate_basis_review` after comparing.
+
+A design proposal may state its own intended values and reasons without a quotation or approval. An estimated operating cost or saving still needs its method, source, uncertainty and derivation; do not relabel it as a design choice to skip the work. Update the basis when a measure or combination changes its value. Bind changes in common scenarios as well, and use `continuation.*` for following service. A validated `pricing_rules` result already supplies the numerical basis for that derived fee. See package `docs/RESEARCH_REVIEW.md` for the contract. Numerical binding does not validate a table-column choice, a total/subset interpretation or policy eligibility.
+
 ## Stage 1: establish the starting point
 
 Create `input/modeling-decisions.md`. Separate source facts and mandatory rules, design choices, negotiable arrangements, bounded estimates/scenarios and missing information. Record the source locator, evidence state, current value, supported alternatives and decision owner. A preliminary study is a starting point; its proposed numbers are not automatically fixed facts.

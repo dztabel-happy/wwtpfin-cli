@@ -148,6 +148,23 @@ wwtp-fin source-snapshot sources/policy.html --extractor html-element/1 --select
 
 `material` 保留为研究者的优先级标记，不再豁免研究。所有已登记估算均须行使应用到全部候选的有效情景；可以在同一情景中检验有关联的多个估算，不要求逐字段单开任务。设计选择均须通过实际候选或情景比较；只有用户明确固定且合同绑定路径和值时，才可以 `user_bound: true` 免除变体。不得通过删掉整条假设逃避检查：完整决策另有基于模型的关键输入覆盖检查。
 
+### 候选及组合的取值依据
+
+完整成本研究还检查候选相对基准的实际参数变化。用 `research.candidate_bases` 将候选和组合关联到已有 `parameter_basis`，例如：
+
+```yaml
+candidate_bases:
+  - id: shared-operating-estimate
+    candidate_ids: [operations, operations-and-tax]
+    evidence_refs: [basis-operating-cost]
+```
+
+这里引用的依据仍使用原有格式；其 `baseline_values` 指所列候选在基准情景下的实际值。未改变的参数继承基准依据，无须逐候选重新抄写。同一组数值底稿可用于多个同值候选；组合产生了不同的成本或范围时，应登记对应底稿。依据值过期、未绑定的候选变化或情景覆盖与依据不一致，使 `candidate_basis_review` 未通过，计算结果仍保留供研究。
+
+`design_choice` 可以是有明确取值和理由的条件提案，不要求先取得正式报价或审批；不能把实际费用估算改成设计选择以绕过推导。`estimate` 继续保留来源、方法、不确定性、情景取值和数值推导。变化涉及续期时，绑定其 `continuation.*` 参数。已经由 `pricing_rules` 重验的派生收费不要求再造一套求解底稿。
+
+候选输入改变后，更新真实依据并重新比较，而不是只修改输入、沿用旧证据。最终选定和独立校验再次检查这些绑定。它证明所研究的值与所登记的依据对应，不认证单位解释、工程可行性、政策适用或提案已获批准。
+
 ### 可复算的数值估算
 
 完整成本决策的数值估算必须提供 `parameter_basis.derivation`。`inputs` 是有来源定位的变量；每项包含 `value`、`unit`、`evidence_ref`、`source_path`。来源须在本依据的 `source_refs` 中且已取得；`source_path` 定位该证据记录的 `value` 内数值或数值数组。文字来源另给原文 `quote`，必须在该位置精确出现，其数值与变量一致。`5.65万`以数值5.65登记，单位换算明确写入公式，不默改为65000。

@@ -188,6 +188,7 @@ def main():
         This is a test fixture, not evidence or a research generator for real projects.
         """
         research = deepcopy(data["scheme_set"]["research"])
+        research["candidate_bases"] = []
         ids = [row["id"] for row in spec["candidates"]]
         paths = sorted({key for row in spec["candidates"] for key in row["overrides"]})
         for direction in research["directions"]:
@@ -274,6 +275,35 @@ def main():
             supporting.append({"evidence_id": ident, "label": item["id"], "source": source_id,
                 "as_of": "2025-12-01", "provided_by": "Synthetic acceptance", "evidence_state": "unverified", "value": packet})
             item["evidence_refs"] = [ident]
+        # Literal proposals of this synthetic protocol, prepared before any
+        # behavior under test; never repair real project evidence at compare.
+        for candidate in spec["candidates"]:
+            ident = candidate["id"]
+            proposal = json.loads(run("run", "-p", save(label + "-" + ident + "-proposal.json",
+                fixture_merge(normalized, candidate["overrides"])),
+                "--no-sensitivity", "--no-boundaries", "--no-tables", "--compact"))["params"]
+            roots = set(candidate["overrides"])
+            for scenario in research["scenarios"]:
+                roots.update(scenario.get("candidate_overrides", {}).get(ident, {}).get("overrides", {}))
+            following = candidate.get("continuation")
+            if following:
+                proposal["continuation"] = json.loads(run("run", "-p", save(label + "-" + ident + "-following.json",
+                    following["params"]), "--no-sensitivity", "--no-boundaries", "--no-tables", "--compact"))["params"]
+                roots.add("continuation")
+            if not roots:
+                continue
+            ref = source_id + "/candidate/" + ident
+            supporting.append({"evidence_id": ref, "label": "Explicit synthetic proposal",
+                "source": source_id, "as_of": "2025-12-01", "provided_by": "Synthetic acceptance",
+                "evidence_state": "unverified", "value": {
+                    "type": "parameter_basis", "kind": "design_choice",
+                    "baseline_values": {key: proposal[key] for key in sorted(roots)},
+                    "source_refs": [source_id], "method": "Literal proposed values in this synthetic protocol",
+                    "scenario_values": {key: {"overrides": case["overrides"],
+                        "candidate_overrides": {i: v["overrides"] for i, v in case.get("candidate_overrides", {}).items()},
+                        "continuation_overrides": {i: v["overrides"] for i, v in case.get("continuation_overrides", {}).items()}}
+                        for key, case in scenarios.items()}}})
+            research["candidate_bases"].append({"id": ref, "candidate_ids": [ident], "evidence_refs": [ref]})
         return save(label + "-evidence.json", fixture_evidence)
 
     assert not rows["cash_gap"]["numerically_feasible"]

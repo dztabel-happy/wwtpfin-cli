@@ -316,3 +316,19 @@ research:
       applicability: 相同服务只采用一个完整报价，不能同时签订两个互斥报价。
       exceptions: 独立措施可以组合；本次成员只是互斥报价，不属于该例外。
   stopping_reason: 任务范围内报价候选及共同水量下界已逐一测算；工程税务等合成边界固定，只验证研究绑定，不证明现实项目最优。
+  candidate_bases:
+  - id: synthetic://candidate-basis/cash_gap
+    candidate_ids:
+    - cash_gap
+    evidence_refs:
+    - synthetic://candidate-basis/cash_gap
+  - id: synthetic://candidate-basis/conditional
+    candidate_ids:
+    - conditional
+    evidence_refs:
+    - synthetic://candidate-basis/conditional
+  - id: synthetic://candidate-basis/complete
+    candidate_ids:
+    - complete
+    evidence_refs:
+    - synthetic://candidate-basis/complete
