@@ -36,6 +36,7 @@ wwtp-fin schema --kind scheme-set
 | `solve` | `-p` 与目标/变量 | 一维反求结果；无解时返回 4。 |
 | `sensitivity` | `-p` | 敏感性表与排序。个别子情景违反参数约束时，该点标为不可计算并保留原因；不撤销有效基准，也不自动改变其融资条件。含不可计算档位的因素不参与排序与绘图，已计算点仍保留在明细中。 |
 | `compare` | `-p`、`--schemes`、`-o` | 有限候选逐案重算、硬约束检查、机械排序及责任/审批披露；最终选择仍需用户确认。 |
+| `price-schemes` | `-p`、含 `research.pricing_rules` 的 `--schemes`、空 `-o` | 复用共同现金底线求解，输出新收费草案和变更；不改原输入、合同或证据，不代表回报定价或推荐。失败仅保留诊断，退出 4。 |
 | `finalize` | `--comparison`、`--selection`、`--contract`、`--evidence`、`-o` | 按明确选择重新计算完整成果，写入输入快照和 `final-run.json`，不覆盖旧运行。 |
 | `verify-final-run` | 最终运行目录 | 检查选择、合同、参数、证据、软件身份与完整成果文件的绑定。 |
 | `check` | `-p` | 财务一致性检查；可写 `checks.json`。 |
@@ -67,7 +68,7 @@ wwtp-fin schema --kind scheme-set
 | 1 | 参数、文件或成果包校验错误。 |
 | 2 | `run` 或 `check` 的财务一致性检查未通过。 |
 | 3 | `build` 已写出成果包，但质量门禁未通过。 |
-| 4 | `solve` 未求得可行解，或 `compare` 没有通过数值、范围、可比性及已知政策适用要求的候选；比较诊断文件仍保留。 |
+| 4 | `solve` 或 `price-schemes` 未求得有效解，或 `compare` 没有通过数值、范围、可比性及已知政策适用要求的候选；诊断文件仍保留。 |
 
 ## 告警 ID
 
