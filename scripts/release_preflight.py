@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--core-repo",
         type=Path,
-        default=PUBLIC_ROOT.parent / "wushuichuli",
+        default=PUBLIC_ROOT.parent / "wwtpfin-cli-core",
     )
     parser.add_argument("--skip-core-gates", action="store_true")
     parser.add_argument("--skip-binary-build", action="store_true")

@@ -17,7 +17,7 @@ PAYLOAD=(
   npm/platform-packages/win32-x64/package.json
   skills examples docs README.md README.zh-CN.md DOMAIN_CONTRACT.md CHANGELOG.md
 )
-if grep -R -n -E 'src/wwtpfin|wushuichuli|caseadapters|benchmarks-work' "${PAYLOAD[@]}" 2>/dev/null; then
+if grep -R -n -E 'src/wwtpfin|wushuichuli|/wwtpfin-cli-core/|caseadapters|benchmarks-work' "${PAYLOAD[@]}" 2>/dev/null; then
   echo "发现核心源码或私有路径引用" >&2
   exit 1
 fi
