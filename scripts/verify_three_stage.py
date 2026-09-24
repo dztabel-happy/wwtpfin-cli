@@ -434,7 +434,12 @@ def main():
     run("verify-final-run", out / "cost-final")
     cost_final = json.loads((out / "cost-final/deliverable/result.json").read_text(encoding="utf-8"))
     check_brief(out / "cost-final", costs, "lower_price", cost_final)
-    assert cost_final["scalars"]["payer_net_outflow_wan"] == costs["candidates"][1]["objective_value"]
+    # These totals use separate floating-point reductions. Python 3.9 can differ
+    # by a few ulps; retain the same absolute ledger tolerance used above.
+    final_cost = cost_final["scalars"]["payer_net_outflow_wan"]
+    compared_cost = costs["candidates"][1]["objective_value"]
+    assert math.isclose(final_cost, compared_cost, rel_tol=0, abs_tol=1e-7), (
+        final_cost, compared_cost, final_cost - compared_cost)
     assert "payer_cashflows" in cost_final["tables"]
     assert "construction_funding" in cost_final["tables"]
     assert cost_final["capital"]["grant_use_wan"] == [1000, 0]
