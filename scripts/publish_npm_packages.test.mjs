@@ -30,7 +30,7 @@ function fixture(t, change = () => {}) {
       writeFileSync(destination, data);
     }
     const archive = path.join(temp, `${index}.tgz`);
-    execFileSync("tar", ["-czf", archive, "-C", directory, "package"]);
+    execFileSync("tar", ["-czf", path.basename(archive), "-C", path.relative(path.dirname(archive), directory), "package"], { cwd: path.dirname(archive) });
     return archive;
   });
 }

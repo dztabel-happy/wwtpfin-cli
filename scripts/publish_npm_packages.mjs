@@ -41,14 +41,14 @@ export function publishPackages({ files, root = publicRoot, dryRun = false, npm 
   for (const filename of files) {
     const archive = path.resolve(filename);
     if (!archive.endsWith(".tgz")) throw new Error("Only packed .tgz files may be published");
-    const manifest = JSON.parse(execFileSync("tar", ["-xOf", archive, "package/package.json"], { encoding: "utf8" }));
+    const manifest = JSON.parse(execFileSync("tar", ["-xOf", path.basename(archive), "package/package.json"], { cwd: path.dirname(archive), encoding: "utf8" }));
     const wanted = expected.find(pkg => pkg.name === manifest.name);
     if (!wanted || archives.has(manifest.name)) throw new Error(`Unexpected or duplicate package: ${manifest.name}`);
     for (const field of ["version", "os", "cpu", "files", "bin", "optionalDependencies"]) {
       if (!same(manifest[field], wanted[field])) throw new Error(`${manifest.name}: packed ${field} does not match the release manifest`);
     }
     if (manifest.private) throw new Error(`${manifest.name}: package is private`);
-    const entries = execFileSync("tar", ["-tzf", archive], { encoding: "utf8" }).trim().split(/\r?\n/);
+    const entries = execFileSync("tar", ["-tzf", path.basename(archive)], { cwd: path.dirname(archive), encoding: "utf8" }).trim().split(/\r?\n/);
     const paths = entries.filter(entry => !entry.endsWith("/"));
     const allowed = wanted.files ?? [];
     for (const entry of paths) {
