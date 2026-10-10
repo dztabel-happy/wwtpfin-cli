@@ -61,9 +61,9 @@ def main(argv: list[str] | None = None) -> int:
             str(binary),
             "build",
             "-p",
-            str(PUBLIC_ROOT / "examples" / "showcase" / "project.yaml"),
+            str(PUBLIC_ROOT / "examples" / "minimal_complete" / "project.yaml"),
             "--evidence",
-            str(PUBLIC_ROOT / "examples" / "showcase" / "evidence.json"),
+            str(PUBLIC_ROOT / "examples" / "minimal_complete" / "evidence.json"),
             "-o",
             str(output),
         ])
