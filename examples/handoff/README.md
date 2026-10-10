@@ -5,9 +5,9 @@
 ## 先生成最小完整成果包
 
 ```bash
-.venv/bin/wwtp-fin build -p examples/minimal_complete/project.yaml \
+wwtp-fin build -p examples/minimal_complete/project.yaml \
   --evidence examples/minimal_complete/evidence.json -o handoff-out
-.venv/bin/wwtp-fin verify-deliverable handoff-out
+wwtp-fin verify-deliverable handoff-out
 ```
 
 ## 先组织报告

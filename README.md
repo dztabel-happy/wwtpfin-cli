@@ -11,12 +11,14 @@ The three stages deliver a sourced baseline; alternatives with costs, conditions
 ### 1. Install the CLI
 
 ```bash
-npm install -g @dztabel/wwtpfin
+npm install -g @dztabel/wwtpfin@0.2.0
 wwtp-fin --version
 wwtp-fin --help
 ```
 
-Supports macOS Apple Silicon, Linux x64 and Windows x64. This branch's three-stage workflow requires 0.2.0; see the [changelog](CHANGELOG.md) for release status.
+Supports macOS Apple Silicon, Linux x64 and Windows x64 with Node.js 18 or newer. This release is 0.2.0; `wwtp-fin --version` should print `wwtp-fin 0.2.0`. See the [changelog](CHANGELOG.md).
+
+This is an assisted consulting trial: professional review is required for source interpretation, policy eligibility and final recommendations.
 
 ### 2. Install the agent skills
 

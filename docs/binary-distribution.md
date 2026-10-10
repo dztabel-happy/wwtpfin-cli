@@ -29,6 +29,8 @@ The public workflow requires:
 - a read-only `CORE_DEPLOY_KEY` secret in the public repository;
 - an `NPM_TOKEN` secret allowed to publish the four npm packages.
 
-Dispatch `Release platform packages` with an exact `core_ref` and `publish=false` first. The workflow resolves that ref once to an immutable commit, builds all three platform packages and performs packed-install smoke tests. Repeat with `publish=true` only after the dry run succeeds.
+Dispatch `Release platform packages` with an exact `core_ref` and `publish=false` first. The workflow resolves that ref once to an immutable commit, builds all three platform packages and performs packed-install smoke tests. Repeat with `publish=true` using the same core and wrapper commits only after the dry run succeeds. All platform builds and installed checks must finish before the publication job starts. Only the four public npm tarballs are transferred between jobs; private source trees, case data and test logs are not uploaded. The publication job preflights every tarball, then publishes platform packages before the main package. The dry run exercises the same publisher with `--dry-run`.
+
+A retry skips an existing version only when its registry integrity equals the exact tarball being published. Conflicting contents and registry errors stop publication; use the original verified artifacts for a retry, or choose a new version if a rebuild differs.
 
 The repository-local `dist/` directory is maintainer scratch space. It is ignored and never published.

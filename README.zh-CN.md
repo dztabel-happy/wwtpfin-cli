@@ -11,12 +11,14 @@
 ### 1. 安装 CLI
 
 ```bash
-npm install -g @dztabel/wwtpfin
+npm install -g @dztabel/wwtpfin@0.2.0
 wwtp-fin --version
 wwtp-fin --help
 ```
 
-支持 macOS Apple Silicon、Linux x64 和 Windows x64。本分支的三阶段流程要求 0.2.0；发布状态见 [更新记录](CHANGELOG.md)。
+支持 macOS Apple Silicon、Linux x64 和 Windows x64，需要 Node.js 18 或更新版本。本次版本为 0.2.0，`wwtp-fin --version` 应显示 `wwtp-fin 0.2.0`。详见 [更新记录](CHANGELOG.md)。
+
+本版本用于协助咨询试用，原文理解、政策适用和最终建议需由专业人员复核。
 
 ### 2. 安装 agent skill
 

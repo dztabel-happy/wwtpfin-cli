@@ -60,8 +60,30 @@ grep -q 'core_ref:' .github/workflows/release.yml
 grep -q 'CORE_DEPLOY_KEY' .github/workflows/release.yml
 grep -q 'NPM_TOKEN' .github/workflows/release.yml
 test "$(grep -Fc 'ref: ${{ inputs.core_ref }}' .github/workflows/release.yml)" -eq 1
-test "$(grep -Fc 'ref: ${{ needs.resolve-core-ref.outputs.core_sha }}' .github/workflows/release.yml)" -eq 2
+test "$(grep -Fc 'ref: ${{ needs.resolve-core-ref.outputs.core_sha }}' .github/workflows/release.yml)" -eq 1
 grep -q 'core_sha=$(git rev-parse HEAD)' .github/workflows/release.yml
+
+node <<'NODE'
+const fs = require("node:fs");
+const workflow = fs.readFileSync(".github/workflows/release.yml", "utf8");
+const [build, publish] = workflow.split("  publish-packages:\n");
+if (!publish || /npm publish|publish_npm_packages/.test(build) ||
+    !publish.includes("needs: [resolve-core-ref, build-platform]") ||
+    publish.includes("CORE_DEPLOY_KEY") ||
+    !publish.includes("node scripts/publish_npm_packages.mjs release-packages/*.tgz") ||
+    !publish.includes("node scripts/publish_npm_packages.mjs --dry-run release-packages/*.tgz")) {
+  throw new Error("All tested packages must converge before publication and use the same rehearsal path");
+}
+if (/pytest|pull_request:|tags:/.test(workflow)) throw new Error("Public release workflow must remain manual and source-safe");
+const uploads = workflow.match(/        uses: actions\/upload-artifact@[^\n]+\n        with:\n(?:          [^\n]+\n)+/g) ?? [];
+if (uploads.length !== 2 || uploads.some(step =>
+    !/name: npm-package-(?:\$\{\{ matrix\.platform \}\}|main)/.test(step) ||
+    !/path: \$\{\{ runner\.temp \}\}\/wwtpfin-release-(?:platform|main)\/\*\.tgz\n/.test(step) ||
+    !step.includes("retention-days: 1\n") || !step.includes("if-no-files-found: error\n"))) {
+  throw new Error("Only tested npm tarballs may cross jobs, with one-day retention");
+}
+NODE
+node --test scripts/publish_npm_packages.test.mjs
 
 if [ -n "$CORE_REPO" ]; then
   python3 "$CORE_REPO/scripts/sync_public_assets.py" "$ROOT" --check
