@@ -1,0 +1,2 @@
+# Preserve the exact bytes of originals bound by evidence SHA256.
+examples/three_stage/sources/** -text

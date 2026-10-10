@@ -177,7 +177,8 @@ def main():
     comparison = out / "comparison/scheme-comparison.json"
     data = json.loads(comparison.read_text(encoding="utf-8"))
     rows = {row["id"]: row for row in data["candidates"]}
-    assert data["research_review"]["source_artifact_review"]["passed"]
+    source_review = data["research_review"]["source_artifact_review"]
+    assert source_review["passed"], source_review["issues"]
     assert any(row["status"] == "artifact_reproduced"
                for row in data["research_review"]["source_artifact_review"]["checks"])
     check_brief(comparison.parent, data)
