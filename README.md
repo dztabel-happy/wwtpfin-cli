@@ -24,6 +24,8 @@ This is an assisted consulting trial: professional review is required for source
 
 Codex and Claude Code use the same two skills: [wwtpfin-consulting-core](skills/wwtpfin-consulting-core/SKILL.md) handles all three stages through complete recalculation; [wwtpfin-consulting-report](skills/wwtpfin-consulting-report/SKILL.md) compiles a formal report when requested.
 
+The agent environment also needs Python 3.9 or newer to run the bundled selection and report helper scripts; they use only the standard library. The CLI binary itself includes its Python runtime.
+
 For Codex, copy the two bundled skills into your user skills directory. Repeat after CLI updates to keep them synchronized.
 
 ```bash

@@ -24,6 +24,8 @@ wwtp-fin --help
 
 Codex 和 Claude Code 使用同一套两份 skill：[wwtpfin-consulting-core](skills/wwtpfin-consulting-core/SKILL.md) 贯穿三个阶段直至完整重算；需要正式咨询报告时，再调用 [wwtpfin-consulting-report](skills/wwtpfin-consulting-report/SKILL.md)。
 
+agent 的脚本执行环境还需 Python 3.9 或更新版本，用于随附的选择记录和报告辅助脚本；仅使用标准库。CLI 二进制本身已包含 Python 运行环境。
+
 Codex 用户执行以下命令，将两项 skill 复制到用户技能目录。更新 CLI 后重新执行以同步 skill。
 
 ```bash
