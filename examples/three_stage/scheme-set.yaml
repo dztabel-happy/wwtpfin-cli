@@ -1,0 +1,334 @@
+schema: wwtp-fin/scheme-set/1
+include_base: false
+objective:
+  metric: decision_cost_wan
+  direction: min
+  basis: 合成示例：同等服务期间内最小化服务费与补助合计；不代表现实项目报价。
+hard_constraints: []
+candidates:
+- id: cash_gap
+  name: 计算有效但存在现金缺口
+  rationale: 仅验证产品流程，不是项目建议
+  overrides:
+    tariff_blended_gross: 0.01
+  tradeoffs:
+  - category: 付费
+    description: 较高单价由服务付费方承担
+    responsible_party: 服务付费方
+    approval_required: true
+    evidence_refs:
+    - synthetic://workflow
+  conditions:
+  - id: implementation
+    status: satisfied
+    evidence_refs:
+    - synthetic://workflow
+    note: 合成测试条件；不得用于现实项目
+- id: conditional
+  name: 数值通过但条件待落实
+  rationale: 仅验证产品流程，不是项目建议
+  overrides:
+    tariff_blended_gross: 3.5
+  tradeoffs:
+  - category: 付费
+    description: 较高单价由服务付费方承担
+    responsible_party: 服务付费方
+    approval_required: true
+    evidence_refs:
+    - synthetic://workflow
+  conditions:
+  - id: implementation
+    status: pending
+    evidence_refs: []
+    note: 合成测试条件；不得用于现实项目
+- id: complete
+  name: 供完整流程验收的合成方案
+  rationale: 仅验证产品流程，不是项目建议
+  overrides:
+    tariff_blended_gross: 4.0
+  tradeoffs:
+  - category: 付费
+    description: 较高单价由服务付费方承担
+    responsible_party: 服务付费方
+    approval_required: true
+    evidence_refs:
+    - synthetic://workflow
+  conditions:
+  - id: implementation
+    status: satisfied
+    evidence_refs:
+    - synthetic://workflow
+    note: 合成测试条件；不得用于现实项目
+research:
+  directions:
+  - id: service_demand
+    domain: service_demand
+    status: not_applicable
+    candidate_ids: []
+    paths:
+    - vol_segments
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: &id001
+      - cash_gap
+      - conditional
+      - complete
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
+  - id: capital_and_renewal
+    domain: capital_and_renewal
+    status: not_applicable
+    candidate_ids: []
+    paths:
+    - capital.assets
+    - capital.replacement_assets
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
+  - id: operations
+    domain: operations
+    status: not_applicable
+    candidate_ids: []
+    paths:
+    - opex_items.0
+    - opex_items.1
+    - opex_items.2
+    - opex_items.3
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
+  - id: tax_and_support
+    domain: tax_and_support
+    status: not_applicable
+    candidate_ids: []
+    paths:
+    - cit_mode
+    - income_tax.equipment_credit
+    - vat_method
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
+  - id: financing_and_payment
+    domain: financing_and_payment
+    status: evaluated
+    candidate_ids:
+    - cash_gap
+    - conditional
+    - complete
+    paths:
+    - tariff_blended_gross
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+  - id: delivery_and_contract
+    domain: delivery_and_contract
+    status: not_applicable
+    candidate_ids: []
+    paths:
+    - mode
+    basis: 合成任务仅选择资金闭合的报价；同一服务、工程及合同边界，无其它措施授权。实际项目必须主动研究各领域。
+    evidence_refs:
+    - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id001
+      applicability: 合成任务定义对本次全部报价固定该领域边界，不代表现实项目没有措施。
+      exceptions: 原文例外为实际项目须另行研究，本次仅为合成验收。
+  - id: fixed_financing_terms
+    domain: financing_and_payment
+    status: excluded
+    candidate_ids: []
+    paths:
+    - equity_ratio
+    - loan_tranches
+    - operating_loan_tranches
+    - financing_declaration
+    basis: This synthetic fixture fixes the funding terms while comparing quoted payments;
+      real projects must research alternatives.
+    evidence_refs:
+    - synthetic://fixed-scope
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids:
+      - cash_gap
+      - conditional
+      - complete
+      applicability: Synthetic fixture funding terms are fixed
+      exceptions: No implication for real project funding alternatives
+  assumptions:
+  - id: volume
+    paths:
+    - vol_segments
+    kind: estimate
+    basis: 合成测试将处理量作为估计，保守分支为各期减少10%；不是现实水量预测方法。
+    evidence_refs:
+    - synthetic://demand-range
+    - synthetic://basis/volume
+    material: true
+    scenario_ids:
+    - lower_volume
+  - id: synthetic-fixed-inputs
+    kind: source_fact
+    paths:
+    - amort_base_wan
+    - amort_years
+    - base_calendar_year
+    - billable_cap_enabled
+    - billable_cap_factor
+    - calculation_basis
+    - capital
+    - cit_mode
+    - concession_years
+    - days_per_year
+    - debt_ratio
+    - design_capacity_m3d
+    - discount_rate
+    - dividend_payout_ratio
+    - dscr_include_short_term
+    - enable_working_capital_loan
+    - equity_ratio
+    - evaluation_date
+    - financing_declaration
+    - hist_vol_m3d
+    - income_tax_rate
+    - loan_tranches
+    - loss_carryforward_years
+    - mode
+    - operating_loan_tranches
+    - opex_base_volume_m3d
+    - opex_exclusions
+    - opex_items
+    - other_taxes
+    - residual_rate
+    - revenue
+    - revenue_round_digits
+    - share_nonresident
+    - share_resident
+    - short_loan_rate
+    - surplus_reserve_cap_ratio
+    - surplus_reserve_rate
+    - tariff_blend_round_digits
+    - tariff_blended_gross
+    - tariff_escalation
+    - tariff_nonresident
+    - tariff_resident
+    - tariff_special
+    - tax_holiday_free_years
+    - tax_holiday_half_years
+    - tax_holiday_start_operation_year
+    - terminal_asset_event
+    - terminal_value_after_tax_wan
+    - terminal_value_method
+    - transfer_price_wan
+    - vat_addon_city
+    - vat_addon_edu
+    - vat_addon_local_edu
+    - vat_credit_begin_other_wan
+    - vat_credit_begin_service_wan
+    - vat_credit_begin_wan
+    - vat_line_mode
+    - vat_method
+    - vat_output_rate
+    - vat_refund_ratio
+    - vat_refund_taxable
+    - vat_relief
+    - vat_simplified_rate
+    - vol_growth_rate
+    - vol_segment_len
+    - vol_year1_m3d
+    - water
+    basis: Literal fixed inputs of this synthetic fixture, not real project facts
+    material: true
+    scenario_ids: []
+    evidence_refs:
+    - synthetic://basis/synthetic-fixed-inputs
+  scenarios:
+  - id: lower_volume
+    assumption_ids:
+    - volume
+    basis: 合成研究的共同水量下界；所有候选均保持原报价重算收入和变动成本。
+    evidence_refs:
+    - synthetic://demand-range
+    overrides:
+      vol_segments:
+      - year_from: 1
+        year_to: 1
+        m3d: 16200
+      - year_from: 2
+        year_to: 2
+        m3d: 21600
+      - year_from: 3
+        year_to: 25
+        m3d: 25650
+  combinations:
+  - candidate_ids: &id002
+    - conditional
+    - complete
+    result_candidate_id: null
+    basis: 同一服务只采用一种报价，两个报价互斥，不能相加。
+    evidence_refs:
+    - synthetic://exclusive-prices
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id002
+      applicability: 相同服务只采用一个完整报价，不能同时签订两个互斥报价。
+      exceptions: 独立措施可以组合；本次成员只是互斥报价，不属于该例外。
+  - candidate_ids: &id003
+    - cash_gap
+    - conditional
+    result_candidate_id: null
+    basis: 同一服务的单价候选互斥；低价资金缺口反例不能作为可叠加降本措施。
+    evidence_refs:
+    - synthetic://exclusive-prices
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id003
+      applicability: 相同服务只采用一个完整报价，不能同时签订两个互斥报价。
+      exceptions: 独立措施可以组合；本次成员只是互斥报价，不属于该例外。
+  - candidate_ids: &id004
+    - cash_gap
+    - complete
+    result_candidate_id: null
+    basis: 同一服务的单价候选互斥；低价资金缺口反例不能作为可叠加降本措施。
+    evidence_refs:
+    - synthetic://exclusive-prices
+    exclusion:
+      kind: source_rule
+      scope_candidate_ids: *id004
+      applicability: 相同服务只采用一个完整报价，不能同时签订两个互斥报价。
+      exceptions: 独立措施可以组合；本次成员只是互斥报价，不属于该例外。
+  stopping_reason: 任务范围内报价候选及共同水量下界已逐一测算；工程税务等合成边界固定，只验证研究绑定，不证明现实项目最优。
+  candidate_bases:
+  - id: synthetic://candidate-basis/cash_gap
+    candidate_ids:
+    - cash_gap
+    evidence_refs:
+    - synthetic://candidate-basis/cash_gap
+  - id: synthetic://candidate-basis/conditional
+    candidate_ids:
+    - conditional
+    evidence_refs:
+    - synthetic://candidate-basis/conditional
+  - id: synthetic://candidate-basis/complete
+    candidate_ids:
+    - complete
+    evidence_refs:
+    - synthetic://candidate-basis/complete

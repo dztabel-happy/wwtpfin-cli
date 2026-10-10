@@ -8,38 +8,50 @@ description: >-
 
 # wwtp-fin Consulting Core
 
-Use this CLI when the task needs deterministic wastewater-project financial calculation, checks, evidence-aware findings, structured report content, tables, or figure briefs. Do not use it to write an unconstrained narrative, make a Word file, draw a chart, infer missing facts, or replace an engineering/design study.
+Use `wwtp-fin` as a professional calculation and decision workspace. The agent interprets sources, finds measures, proposes methods and explains tradeoffs; the CLI calculates, checks numerical consistency and comparability, and binds evidence, decisions and results. A passed check does not certify source meaning, policy eligibility, exhaustive research or global optimality.
 
-## Workflow
+The user supplies materials, goals and feedback. Within one continuing case, actively research, calculate and improve the advice before asking for a choice. Do not require financial expertise, policy names or another fresh session from the user. A stronger agent may discover better methods or new measures; the workflow must preserve and explain that progress.
 
-1. Read `wwtp-fin --help`, the current input and evidence schemas, `docs/INTAKE.md`, and `examples/minimal_complete/`.
-2. Convert source materials into one parameter file, one evidence file, and a conversion log. Preserve source wording, locator, date and evidence state. Unknown, ambiguous, or missing information goes to `unresolved`, `required_user_inputs`, or `declared_basis`; never invent a value.
-3. Build, then inspect every `warnings.json` item and `quality.json` before claiming a result.
-4. Verify the completed package. Read `document.json` / `report.md`, `result.json`, checks, decisions, tables and figure briefs together; never promote a warning, missing input, or unverified benchmark into a conclusion.
-5. Convert `document.json` to DocxKit's `report.json`, then hand off report semantics and tables; hand off `figures/*.json` briefs and matching `figures/data/*.csv` to ChartKit. See [handoff](references/handoff.md).
+## Start or resume
+
+- Resolve the active CLI's asset root: the source checkout when developing, otherwise the active `@dztabel/wwtpfin` installation. Use its skills, schemas, docs and examples together; a same-name global skill may be stale. Relative documentation paths below are under that root.
+- Create or reuse a case workspace; copy originals into `sources/`. Use [workspace management](references/workspace.md) for current input, immutable rounds and exports. Run `case status` on resumption. Before presenting a selected result, `verify-final-run RUN --case CASE` also checks currentness and refreshes `CURRENT.md`; its successful check covers the unchanged handoff.
+- Read command help and relevant schemas when constructing inputs; consult the matching reference for a specific modeling or review issue. `examples/minimal_complete/` and `examples/three_stage/` show shapes, not project facts or recommended assumptions.
+
+## Three reversible stages
+
+| Stage | Work and output | Tool path |
+|---|---|---|
+| Establish a starting point | Source meanings, conflicts, supported estimates and a calculable baseline; a decision contract expressing the user's actual cost goal and boundaries. Discuss important interpretations and opportunities. | `intake`, then `build`; [conversion discipline](references/conversion-discipline.md), `docs/INTAKE.md`, `docs/COST_PERSPECTIVES.md` |
+| Research and improve | Discover measures, calculate actual combinations and uncertain conditions, explain alternatives and support a recommendation. | `solve`, `sensitivity`, `compare`; [modeling and iteration](references/modeling-iteration.md) |
+| Fix the selected plan | Record the user's concrete choice, fully recompute and verify, then hand off the exact run. Preserve pending conditions for a selected conditional study. | Bundled `scripts/record-selection.py`, `finalize`, `verify-final-run --case`; [workspace management](references/workspace.md), `docs/CASE_WORKFLOW.md` |
+
+New facts, goals or methods return to the relevant stage. Record actual user requests and reasons; update the current artifact while retaining history. The product handles version binding, not an assumption that the last or highest-numbered run is selected.
+
+## Professional judgments the tools cannot make
+
+1. **Meaning before mapping.** Retain scope, period, units, tax basis and qualifiers. Design capacity is not annual average demand; a total may include a listed subset; an accounting amount need not be a cash payment. Tie conclusions to the exact source passage and explain normalization.
+2. **Facts, estimates and proposals have different roles.** A forecast in a report remains an estimate. Missing workbooks do not block a supported research estimate. State its method and uncertainty; reproducing a reported number with one assumed method does not prove that method was used or that another source statement is wrong. Do not convert the first trial value into a user-fixed boundary.
+3. **Keep the cost goal consistent.** Construction and operating total cost, project cash cost and a payer's expenditure answer different questions. Agree the scope, common service period and goal order; do not substitute the lowest starting tariff. An alternative perspective explains a tradeoff, not an error in the primary result. If the user changes the objective, update the decision contract and compare again.
+4. **Research is open.** Service, investment/renewal, operations, tax/support, financing/payment and delivery are coverage prompts, not a closed menu. Read the CLI's model-derived study items, then investigate additional relevant opportunities. A label or completed form is not evidence that the work was sufficient.
+5. **Connect a measure to an action.** Establish source → project applicability → action → parameter change → cost and responsible party. Read full policy provisions and exceptions. Challenge exclusions that could change the decision. A sensitivity result does not prove an engineering measure achievable.
+6. **Recompute combinations and meaningful uncertainty.** Do not add isolated savings or borrow a fallback's savings from another combination. Test competing plausible methods where they matter; a percentage around one method does not test another method. When a ranking reverses, explain the condition or required evidence.
+7. **Separate cash feasibility from implementation.** Read the period cash-source/use ledger and `financing_review`. A cumulative deficit is real within the stated assumptions; a separate payer budget does not fund it. A low period DSCR with accumulated cash available requires financing terms and cash-availability analysis, not a claim that the bank will approve or reject.
+8. **Review the recommendation against the calculation.** Use `decision-brief.md/json` as the numerical backbone, then trace decisive savings back through the period ledgers to the actual inputs and source/estimate. Check that the claimed action, timing, duration and related expenditure really entered the calculation; an evidence record or informational table alone does not implement a cash-flow change. Read research/decision issues and `ranking_explanation`, including any accepted primary-cost premium. Correct a mismatch and recompute before recommending; keep conditional assumptions and implementation readiness distinct.
+
+## Efficient tool use
+
+- `parameter_basis` binds the values and methods actually used. Reuse unchanged baseline bases; bind changed candidate values through `candidate_bases`. Do not rewrite evidence merely to make a changed input pass. See `docs/RESEARCH_REVIEW.md` for exact fields.
+- If the intended pricing method is the supported shared cash-floor rule, register `research.pricing_rules` and use `price-schemes` once. It generates separate parameter/scheme drafts and price deltas with the existing solver. Inspect changes and affected evidence, then `compare`; do not write a duplicate candidate-by-scenario solver loop. A cash floor is not an investor-return price or a default commercial objective. Use `solve` or explicit proposals for other methods.
+- Fix reported numerical or binding issues at their actual source. Pure display metadata does not need financial variants, and `material` is optional descriptive metadata rather than permission to skip an actual estimate. `unassessed_domain_prompts` are investigative prompts; they do not force fake candidates.
+- Calculate freely within authorized research. Batch questions only for missing information that blocks useful progress. If the model cannot represent a mechanism, state that specific limitation and its consequence; an upstream engineering workpaper may supply inputs but cannot impersonate completed CLI finance.
 
 ```bash
-wwtp-fin schema --kind input
-wwtp-fin schema --kind project-evidence
-wwtp-fin build -p project.yaml --evidence evidence.json -o deliverable
-wwtp-fin verify-deliverable deliverable
+wwtp-fin intake -p input/project-draft.yaml -o input/intake-advice.json
+wwtp-fin price-schemes -p input/project.yaml --schemes comparisons/compare-0001/scheme-set.yaml -o comparisons/pricing-0001
+wwtp-fin compare -p input/project.yaml --contract input/decision-contract.yaml --evidence input/evidence.json --schemes comparisons/compare-0001/scheme-set.yaml -o comparisons/compare-0001/output
 ```
 
-## Required conversion discipline
+After calculation, read `quality.json`, `warnings.json`, checks and the applicable reviews; run `verify-deliverable` or `verify-final-run` for the artifact type. Respond with the recommendation and reasons, baseline/cost scope, assumptions that could change it, outstanding limitations, current run and paths. A successfully built package is not proof of a verified business premise.
 
-- Financing is especially strict: when unusable, state that and do not supply loan terms.
-- Do not elevate evidence state, turn a table into prose, serialize raw JSON into the report, or use a shared rule catalog as project evidence.
-- Record full material qualifications in `declared_basis`; retain declared totals and targets in `declared_scalars`.
-- Keep pre-tax, after-tax and target bases distinct. A financial benchmark must record its source, date, provider and evidence state.
-- Review `D7-*` warnings individually. A successful exit code does not erase a warning.
-
-Read [conversion discipline](references/conversion-discipline.md) before material conversion.
-
-## Read the result correctly
-
-- `quality.json`: whether the completed content package passed its quality gate.
-- `warnings.json`: input-shape information requiring correction, an explicit limitation, or an unresolved registration.
-- `result.json`: calculation, checks, analysis, decisions, evidence and downstream data.
-- `document.json`: authoritative report semantics; `report.md` is its deterministic projection.
-
-For command exit meanings and output contract, use `docs/contract-surface.md`. For current implementation limits, use `docs/boundary.md`; do not present unimplemented probability analysis, new operating-period long-term debt, mixed-use VAT adjustment, generic scenario groups, or a complete statutory VfM study as available.
+For fractional periods use `docs/TIME_AXIS.md`; for different contract lengths and complete continuation service use `docs/COST_PERSPECTIVES.md`. For unsupported capabilities and exit statuses use `docs/boundary.md` and `docs/contract-surface.md`. Export Word or charts only when requested, from the verified run through [downstream handoff](references/handoff.md) and the report skill.

@@ -1,6 +1,8 @@
 # 最小完整示例：参数 + 证据（examples/minimal_complete/evidence.json）。
 # concession_years 是运营期年数，不含建设期。本例建设期 2 年、运营期 25 年；
 # 若合同写「特许经营期 27 年含建设期 2 年」，此处仍填 25。
+# evaluation_date、revenue.settlement_channel 可在资料未给时省略；产品不会
+# 补固定日期或默认结算渠道。sensitivity_deltas 非空时才要求 sensitivity_target。
 #
 #   wwtp-fin build -p examples/minimal_complete/project.yaml \
 #     --evidence examples/minimal_complete/evidence.json -o deliverable/
@@ -10,6 +12,7 @@ mode: BOT
 project_type: 新建项目
 transfer_price_wan: 0
 terminal_value_method: transfer_without_compensation
+terminal_asset_event: disposal  # 合成示例明确无偿移交；继续持有应另选 continued_use。
 concession_years: 25
 days_per_year: 365
 base_calendar_year: 2026
@@ -39,7 +42,7 @@ capital:
     - {name: 土地使用权, cost_wan: 400, life_years: 25, residual_rate: 0, kind: intangible, depreciable: true, investment_origin: construction}
     - {name: 流动资金, cost_wan: 200, life_years: 1, residual_rate: 1, kind: working_capital, depreciable: false, investment_origin: construction}
   replacement_assets:
-    - {name: 第12年设备资本化重置, operation_year: 12, cost_wan: 800, life_years: 10, residual_rate: 0.05, kind: fixed_asset, depreciable: true, vat_basis: net_of_deductible_vat}
+    - {name: 第12年设备资本化重置, operation_year: 12, cost_wan: 800, life_years: 10, residual_rate: 0.05, kind: fixed_asset, depreciable: true, vat_basis: net_of_deductible_vat, purpose: sustaining, purpose_basis: 示例设备更新维持原服务能力，实际项目须核工程范围}
 
 vol_segments:
   - {year_from: 1, year_to: 1, m3d: 18000}

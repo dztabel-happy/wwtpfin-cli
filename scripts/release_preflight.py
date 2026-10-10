@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--core-repo",
         type=Path,
-        default=PUBLIC_ROOT.parent / "wushuichuli",
+        default=PUBLIC_ROOT.parent / "wwtpfin-cli-core",
     )
     parser.add_argument("--skip-core-gates", action="store_true")
     parser.add_argument("--skip-binary-build", action="store_true")
@@ -61,13 +61,17 @@ def main(argv: list[str] | None = None) -> int:
             str(binary),
             "build",
             "-p",
-            str(PUBLIC_ROOT / "examples" / "showcase" / "project.yaml"),
+            str(PUBLIC_ROOT / "examples" / "minimal_complete" / "project.yaml"),
             "--evidence",
-            str(PUBLIC_ROOT / "examples" / "showcase" / "evidence.json"),
+            str(PUBLIC_ROOT / "examples" / "minimal_complete" / "evidence.json"),
             "-o",
             str(output),
         ])
         _run([str(binary), "verify-deliverable", str(output)])
+        _run([sys.executable, str(PUBLIC_ROOT / "scripts/verify_three_stage.py"),
+              "--cli", str(binary), "--assets",
+              str(install / "node_modules/@dztabel/wwtpfin"),
+              "--output", str(temp / "three-stage")])
     print("release preflight passed")
     return 0
 

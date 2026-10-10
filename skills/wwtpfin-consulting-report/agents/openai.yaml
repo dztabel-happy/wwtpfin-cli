@@ -1,0 +1,4 @@
+interface:
+  display_name: "wwtp-fin Consulting Report"
+  short_description: "将已验证成果与项目资料组织为完整中文咨询报告"
+  default_prompt: "Use $wwtpfin-consulting-report to build a complete Chinese consulting report from the explicitly selected verified wwtp-fin run and source materials, then export it with DocxKit."

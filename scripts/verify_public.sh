@@ -15,13 +15,13 @@ PAYLOAD=(
   npm/platform-packages/darwin-arm64/package.json
   npm/platform-packages/linux-x64/package.json
   npm/platform-packages/win32-x64/package.json
-  skills examples docs README.md README.zh-CN.md
+  skills examples docs README.md README.zh-CN.md DOMAIN_CONTRACT.md CHANGELOG.md
 )
-if grep -R -n -E 'src/wwtpfin|wushuichuli|caseadapters|benchmarks-work' "${PAYLOAD[@]}" 2>/dev/null; then
+if grep -R -n -E 'src/wwtpfin|wushuichuli|/wwtpfin-cli-core/|caseadapters|benchmarks-work' "${PAYLOAD[@]}" 2>/dev/null; then
   echo "发现核心源码或私有路径引用" >&2
   exit 1
 fi
-if grep -R -n -E '亳州|滨江|霍邱|太湖|天门山|下浮' "${PAYLOAD[@]}" 2>/dev/null; then
+if grep -R -n -E -i 'huoqiu|taihu|tianmenshan|bozhou|binjiang|zhujiaqiao|亳州|滨江|霍邱|太湖|天门山|朱家桥' "${PAYLOAD[@]}" 2>/dev/null; then
   echo "发现案例专属词" >&2
   exit 1
 fi
@@ -60,10 +60,33 @@ grep -q 'core_ref:' .github/workflows/release.yml
 grep -q 'CORE_DEPLOY_KEY' .github/workflows/release.yml
 grep -q 'NPM_TOKEN' .github/workflows/release.yml
 test "$(grep -Fc 'ref: ${{ inputs.core_ref }}' .github/workflows/release.yml)" -eq 1
-test "$(grep -Fc 'ref: ${{ needs.resolve-core-ref.outputs.core_sha }}' .github/workflows/release.yml)" -eq 2
+test "$(grep -Fc 'ref: ${{ needs.resolve-core-ref.outputs.core_sha }}' .github/workflows/release.yml)" -eq 1
 grep -q 'core_sha=$(git rev-parse HEAD)' .github/workflows/release.yml
 
+node <<'NODE'
+const fs = require("node:fs");
+const workflow = fs.readFileSync(".github/workflows/release.yml", "utf8").replace(/\r\n/g, "\n");
+const [build, publish] = workflow.split("  publish-packages:\n");
+if (!publish || /npm publish|publish_npm_packages/.test(build) ||
+    !publish.includes("needs: [resolve-core-ref, build-platform]") ||
+    publish.includes("CORE_DEPLOY_KEY") ||
+    !publish.includes("node scripts/publish_npm_packages.mjs release-packages/*.tgz") ||
+    !publish.includes("node scripts/publish_npm_packages.mjs --dry-run release-packages/*.tgz")) {
+  throw new Error("All tested packages must converge before publication and use the same rehearsal path");
+}
+if (/pytest|pull_request:|tags:/.test(workflow)) throw new Error("Public release workflow must remain manual and source-safe");
+const uploads = workflow.match(/        uses: actions\/upload-artifact@[^\n]+\n        with:\n(?:          [^\n]+\n)+/g) ?? [];
+if (uploads.length !== 2 || uploads.some(step =>
+    !/name: npm-package-(?:\$\{\{ matrix\.platform \}\}|main)/.test(step) ||
+    !/path: \$\{\{ runner\.temp \}\}\/wwtpfin-release-(?:platform|main)\/\*\.tgz\n/.test(step) ||
+    !step.includes("retention-days: 1\n") || !step.includes("if-no-files-found: error\n"))) {
+  throw new Error("Only tested npm tarballs may cross jobs, with one-day retention");
+}
+NODE
+node --test scripts/publish_npm_packages.test.mjs
+
 if [ -n "$CORE_REPO" ]; then
+  python3 "$CORE_REPO/scripts/sync_public_assets.py" "$ROOT" --check
   core_version="$(python3 -c 'import re,sys; text=open(sys.argv[1], encoding="utf-8").read(); match=re.search(r"(?ms)^\[project\].*?^version\s*=\s*\"([^\"]+)\"", text); print(match.group(1) if match else "")' "$CORE_REPO/pyproject.toml")"
   public_version="$(node -p "require('./package.json').version")"
   if [ "$core_version" != "$public_version" ]; then
@@ -72,5 +95,12 @@ if [ -n "$CORE_REPO" ]; then
   fi
 fi
 
-npm pack --dry-run >/dev/null 2>&1
+npm pack --dry-run --json | node -e '
+let input = "";
+process.stdin.on("data", chunk => input += chunk);
+process.stdin.on("end", () => {
+  const files = JSON.parse(input).flatMap(pack => pack.files.map(file => file.path));
+  const unexpected = files.filter(path => /(^|\/)__pycache__(\/|$)|\.py[co]$/.test(path));
+  if (unexpected.length) throw new Error("Python cache files in npm package: " + unexpected.join(", "));
+});'
 echo "public package verification passed"

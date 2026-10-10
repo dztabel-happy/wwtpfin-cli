@@ -1,12 +1,21 @@
 {
   "name": "@dztabel/wwtpfin-win32-x64",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Windows x64 binary for wwtp-fin.",
   "license": "UNLICENSED",
-  "publishConfig": { "access": "public" },
-  "os": ["win32"],
-  "cpu": ["x64"],
-  "files": ["wwtp-fin.exe", "_internal"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "files": [
+    "wwtp-fin.exe",
+    "_internal"
+  ],
   "scripts": {
     "prepack": "node -e \"const fs=require('fs'); if(!fs.existsSync('wwtp-fin.exe')||!fs.existsSync('_internal')){console.error('wwtpfin platform package missing wwtp-fin.exe or _internal'); process.exit(1)}\""
   }

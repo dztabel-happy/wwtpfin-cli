@@ -58,8 +58,9 @@ def _read_json(path: Path) -> dict:
 
 def _verify_bundle_boundary(internal: Path) -> None:
     private = re.compile(
-        r"src/wwtpfin|wushuichuli|caseadapters|benchmarks-work|"
-        r"亳州|滨江|霍邱|太湖|天门山|下浮",
+        r"src/wwtpfin|wushuichuli|/wwtpfin-cli-core/|caseadapters|benchmarks-work|"
+        r"huoqiu|taihu|tianmenshan|bozhou|binjiang|zhujiaqiao|"
+        r"亳州|滨江|霍邱|太湖|天门山|朱家桥",
         re.IGNORECASE,
     )
     for path in internal.rglob("*"):
