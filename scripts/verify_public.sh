@@ -65,7 +65,7 @@ grep -q 'core_sha=$(git rev-parse HEAD)' .github/workflows/release.yml
 
 node <<'NODE'
 const fs = require("node:fs");
-const workflow = fs.readFileSync(".github/workflows/release.yml", "utf8");
+const workflow = fs.readFileSync(".github/workflows/release.yml", "utf8").replace(/\r\n/g, "\n");
 const [build, publish] = workflow.split("  publish-packages:\n");
 if (!publish || /npm publish|publish_npm_packages/.test(build) ||
     !publish.includes("needs: [resolve-core-ref, build-platform]") ||
