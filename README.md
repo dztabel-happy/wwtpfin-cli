@@ -11,12 +11,12 @@ The three stages deliver a sourced baseline; alternatives with costs, conditions
 ### 1. Install the CLI
 
 ```bash
-npm install -g @dztabel/wwtpfin@0.2.0
+npm install -g @dztabel/wwtpfin@0.2.1
 wwtp-fin --version
 wwtp-fin --help
 ```
 
-Supports macOS Apple Silicon, Linux x64 and Windows x64 with Node.js 18 or newer. This release is 0.2.0; `wwtp-fin --version` should print `wwtp-fin 0.2.0`. See the [changelog](CHANGELOG.md).
+Supports macOS Apple Silicon, Linux x64 and Windows x64 with Node.js 18 or newer. This release is 0.2.1; `wwtp-fin --version` should print `wwtp-fin 0.2.1`. See the [changelog](CHANGELOG.md).
 
 This is an assisted consulting trial: professional review is required for source interpretation, policy eligibility and final recommendations.
 

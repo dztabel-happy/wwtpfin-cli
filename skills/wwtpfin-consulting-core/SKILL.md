@@ -45,6 +45,7 @@ New facts, goals or methods return to the relevant stage. Record actual user req
 - If the intended pricing method is the supported shared cash-floor rule, register `research.pricing_rules` and use `price-schemes` once. It generates separate parameter/scheme drafts and price deltas with the existing solver. Inspect changes and affected evidence, then `compare`; do not write a duplicate candidate-by-scenario solver loop. A cash floor is not an investor-return price or a default commercial objective. Use `solve` or explicit proposals for other methods.
 - Fix reported numerical or binding issues at their actual source. Pure display metadata does not need financial variants, and `material` is optional descriptive metadata rather than permission to skip an actual estimate. `unassessed_domain_prompts` are investigative prompts; they do not force fake candidates.
 - Calculate freely within authorized research. Batch questions only for missing information that blocks useful progress. If the model cannot represent a mechanism, state that specific limitation and its consequence; an upstream engineering workpaper may supply inputs but cannot impersonate completed CLI finance.
+- When feedback revises a previous comparison or selection, `compare --since-round ROUND` uses that case round to show what changed. Read the primary amounts, their scope, implementation conditions and any changed scenario winners in `decision-brief.md/json` when explaining the decision.
 
 ```bash
 wwtp-fin intake -p input/project-draft.yaml -o input/intake-advice.json

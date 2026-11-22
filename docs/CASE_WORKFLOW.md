@@ -42,6 +42,20 @@ wwtp-fin case status CASE
 
 返回第一阶段并不删除第二阶段成果。无新产物的轮次显示 `in_progress`；已登记产物与当前依据不一致时显示 `needs_update`。两种情况下都不将旧结果作为当前产物。只有校验通过的登记产物为 `current`，这个词表示与当前输入一致，不表示项目条件已经落实或方案最优。
 
+## 根据新反馈解释选择
+
+`compare` 生成的 `decision-brief.md` 会同时列出研究建议和基准情景中实施条件已登记满足的排序首组，保留并列候选。两组有差异时，可以直接对照主目标金额、与严格主目标最优值的差额及待落实条件。
+
+用户修改报价、约束或研究假设后，可在正常重算时加 `--since-round`，指定用户想回顾的轮次。从 `CURRENT.md` 的历史索引选取已登记比较或选定成果的轮次。例如，在写本轮答复前运行：
+
+```bash
+wwtp-fin compare -p CASE/input/project.yaml --contract CASE/input/decision-contract.yaml --evidence CASE/input/evidence.json --schemes CASE/comparisons/compare-0002/scheme-set.yaml --since-round round-0004 -o CASE/comparisons/compare-0002/output
+```
+
+摘要并列显示两轮计算建议、实施候选和过去的选择。配套 `decision-brief.json` 的 `round_change` 按候选 ID 展示基准情景主目标的前后值，追溯时用对应一侧的 `comparison_sha256` 和数值的 `source` 定位原始比较。经核对成本视角、估值、期间、付费主体及服务范围相符后才列差额。新增、移除或口径变化的候选保留各自的数值。`changed_model_paths` 可用于追查原合同与续期参数变化，单个措施的贡献需要相应的对照测算。新一轮选择照常绑定本轮比较。
+
+按实际交付填写 `service` 要求及其关联条件，例如处理规模、出水标准或服务年限。改变这些条款、登记的合规标准或相应数值门槛，会使两轮主目标差额留空。为落实同一条款而更新的付款手续、融资批复和责任方会在摘要及 `round_change.condition_changes` 中逐项列出。服务和金额口径相同时，仍可比较这些安排带来的支出变化。
+
 ## 定稿和导出前同时检查两件事
 
 `verify-final-run RUN` 检查历史文件及选择绑定是否完整。它在用户更改当前资料后仍可能通过，这是正确的历史校验结果。

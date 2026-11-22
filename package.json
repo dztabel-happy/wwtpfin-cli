@@ -1,6 +1,6 @@
 {
   "name": "@dztabel/wwtpfin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Binary-distributed CLI for deterministic wastewater-project financial consulting.",
   "license": "UNLICENSED",
   "publishConfig": {
@@ -10,9 +10,9 @@
     "wwtp-fin": "npm/wwtp-fin.cjs"
   },
   "optionalDependencies": {
-    "@dztabel/wwtpfin-darwin-arm64": "0.2.0",
-    "@dztabel/wwtpfin-linux-x64": "0.2.0",
-    "@dztabel/wwtpfin-win32-x64": "0.2.0"
+    "@dztabel/wwtpfin-darwin-arm64": "0.2.1",
+    "@dztabel/wwtpfin-linux-x64": "0.2.1",
+    "@dztabel/wwtpfin-win32-x64": "0.2.1"
   },
   "files": [
     "npm/wwtp-fin.cjs",
