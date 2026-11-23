@@ -27,6 +27,7 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CORE_SHA: ${{ inputs.core_sha }}
+  PYTHONUTF8: '1'
 
 jobs:
   candidate:
@@ -119,7 +120,11 @@ jobs:
       - name: Pack the platform candidate
         run: python scripts/pack_npm.py --platform "${{ matrix.platform }}" --output platform-candidate > "$RUNNER_TEMP/pack.log" 2>&1
       - name: Install the candidate pair and verify the financial examples
-        run: python scripts/release_preflight.py --smoke main-candidate/*.tgz platform-candidate/*.tgz > "$RUNNER_TEMP/smoke.log" 2>&1
+        run: |
+          status=0
+          python scripts/release_preflight.py --smoke main-candidate/*.tgz platform-candidate/*.tgz > "$RUNNER_TEMP/smoke.log" 2>&1 || status=$?
+          grep '^Acceptance: ' "$RUNNER_TEMP/smoke.log" || true
+          exit "$status"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: wwtpfin-${{ inputs.core_sha }}-${{ matrix.platform }}
