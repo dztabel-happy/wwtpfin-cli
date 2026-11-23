@@ -1,9 +1,0 @@
-dist/
-node_modules/
-__pycache__/
-*.pyc
-*.pyo
-*.tgz
-npm/platform-packages/*/wwtp-fin
-npm/platform-packages/*/wwtp-fin.exe
-npm/platform-packages/*/_internal/
